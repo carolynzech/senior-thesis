@@ -1,5 +1,8 @@
-\section{Introduction}
+\chapter{Introduction}
 \label{sec:intro}
+
+\carolyn{todo: would like to get rid of the ``Chapter 1'' heading, but using chapter*
+means the section numbers don't start over from 1 in each new chapter. come back and fix.}
 
 Software providers that handle sensitive user data are subject to increasing regulatory scrutiny.
 %
@@ -22,41 +25,23 @@ and infrequent.~\cite{todo}
 \sys{} evaluates an application by generating its program dependence graph (PDG), 
 where nodes are program entities (functions, arguments, etc.) and edges are control or data flow dependencies.
 %
-\Writers{} leverage \sys{}'s \emph{markers} abstraction to write \policies{} as graph queries over this PDG.
-%
-Markers are labels that connote the privacy semantics of source code entities.
-%
-For example, rather than write a data deletion policy in terms of the particular database library function responsible for deleting data,
-a \writer{} would instead define a |deletes| marker and write their policy in terms of that.
-%
-\Devs{} apply the markers from the policies to the appropriate source code entities.
-%
-They also mark certain functions as \emph{entrypoints} for the analysis.
-%
-\sys{} constructs PDGs for each \controller{}.
-%
-For instance, for a web application, a \dev{} would mark any user-facing endpoints as \controller{}s.
-%
-The \dev{} then runs \sys{} against their application, which generates the application's \emph{marked PDG},
-i.e., its PDG with its markers applied to the appropriate graph nodes.
-%
 \sys{} evaluates the PDG against the policy and outputs whether the application is compliant.
 %
 We imagine that \devs{} run \sys{} continually throughout the development process, perhaps as part of a CI pipeline.
 
+\section{The Problem}
 Ideally, \writers{} could specify policies at a high level (e.g., ``all sensitive data is encrypted before it exits the application'').
 %
 Such a high-level specification is clear, concise, and portable across applications.
 %
 Prior to this work, however, \sys{} did not support this level of abstraction.
 %
-Instead, \writers{} had to write policies using \sys{]'s Graph Query API.
-%
-Graph Query API policies are low-level graph queries over the application's PDG, written in Rust.
+Instead, policies were Rust programs that executed low-level graph queries over the application's PDG.
 %
 This design limited the available pool of policy writers to those with an in-depth understanding of Rust programming and \sys{}'s PDG representation.
 %
-Since policies were programs, they had the same problems as the applications they evaluated: they were buggy, laborious to write, and comprehensible only to programmers familiar with the application.
+Since policies were programs, they had the same problems as the applications they evaluated: 
+they were buggy, laborious to write, and comprehensible only to programmers familiar with the application.
 %
 It was crucial that we address this problem; the quality of \sys's analysis was moot if organizations could not use it easily (or even correctly).
 
@@ -71,6 +56,7 @@ which will generate its PDG, evaluate it against the compiled \syslang{} policy,
 and output whether the application is compliant.
 %
 
+\section{Goals}
 \syslang{} must address a few challenges.
 %
 First, it must be accessible yet unambiguous.
@@ -132,7 +118,7 @@ and would support such a wide breadth of query patterns that \writers{} would re
 %
 However, if policies are not sufficiently precise, they are more likely to produce false positives or false negatives when run against application code.
 %
-\carolyn{give an example of this? feels too weedy for an intro.}
+% \carolyn{give an example of this? feels too weedy for an intro.}
 %
 % For certain policies, such precision is required for correctness.
 % %
@@ -162,3 +148,7 @@ They were often simpler than the equivalent Rust graph query policies that we ha
 %     \item The \syslang{} compiler to translate \policies{} to graph queries over a PDG.
 %     \item An evaluation demonstrating that \syslang{} is expressive, precise, and efficient, with some limitations.
 % \end{enumerate}
+
+\emph{\sys{} and its Rust Policy API is the product of collaboration with Justus Adam, Livia Zhu, Sreshtaa Rajesh, 
+Will Crichton, Shriram Krishnamurthi, and Malte Schwarzkopf.
+My contribution specifically is the \syslang{} policy language and the compilation to Rust policies.}

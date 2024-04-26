@@ -1,7 +1,7 @@
 % %--------------------
 % % Packages
 % % -------------------
-\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,a4paper]{report}
 \usepackage[utf8x]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
@@ -90,12 +90,6 @@
   moredelim={[is][\color{blue}]{/*}{*/}}
 }
 
-% \lstdefinelanguage{ErrorMessage}{
-%   morestring=[b]",
-%   moredelim={[is][\color{violet}]{@@}{@@}},
-%   moredelim={[is][\color{blue}]{/*}{*/}}
-% }
-
 \lstset{
     language=Rust,
     basicstyle=\ttfamily\footnotesize,
@@ -110,23 +104,20 @@
 
 \setlength{\fboxsep}{1pt}%
 
-% \input{abstract}
-
 \begin{document}
 
-% This has to go after \begin{document}
 \lstMakeShortInline|
 
 \thispagestyle{empty}
 
 \begin{center}
-    \vspace*{1em}{\Huge Title\par}
+    \vspace*{1em}{\Huge \syslang{}: A Privacy Policy Specification Language \par}
     
     \vspace*{1em}{\huge Carolyn Zech\par}
     
     \vspace*{3em}{\LARGE Advisor: Malte Schwarzkopf\par Reader: Shriram Krishnamurthi\par}
     
-    \vspace*{10em}\includegraphics[scale=0.08]{graphics/logo.png}\par
+    \vspace*{8em}\includegraphics[scale=0.08]{graphics/logo.png}\par
     \vspace*{1em}{\LARGE Department of Computer Science\par Brown University\par Providence, RI \par May 2024 \par}
 \end{center}
 \newpage
@@ -135,19 +126,16 @@
 \newpage
 
 \input{chapters/abstract.tex}
-\newpage
 % \input{chapters/acknowledgements.tex}
 \input{chapters/intro.tex}
-% \input{chapters/background.tex}
+\input{chapters/background.tex}
 \input{chapters/overview.tex}
 \input{chapters/design.tex}
 \input{chapters/impl.tex}
 \input{chapters/eval.tex}
 \input{chapters/related-work.tex}
 \input{chapters/conclusion.tex}
-\newpage
 \printbibliography{}
-\newpage
 \input{chapters/appendix.tex}
 
 \end{document}

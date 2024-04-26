@@ -1,16 +1,16 @@
-\section{Evaluation}
+\chapter{Evaluation}
 
 We evaluate \syslang{} against seven popular, third-party Rust applications to answer four questions:
 %
 \begin{enumerate}[nosep]
     \item Can \syslang's grammar express real-world \policies? (\S\ref{sec:expressivity})
-    % \item Is \syslang{} intuitive and relatively low-effort \carolyn{bad phrasing}? (\S\ref{sec:accessibility})
+    \item What is the developer effort required to encode policies in \syslang? (\S\ref{sec:accessibility})
     \item Does \syslang's compiler correctly translate \policies to graph queries without loss of precision? (\S\ref{sec:precision})
     \item Does \syslang's compiler produce efficient, optimized queries? (\S\ref{sec:efficiency})
 \end{enumerate}
 %
 
-\subsection{Expressivity}
+\section{Expressivity}
 \label{sec:expressivity}
 
 For each of the applications, we encoded their \syslang{} policies by
@@ -42,7 +42,7 @@ but cannot catch bugs where an application only deletes \emph{some} of the data 
 %
 \todo{table summarizing applications and policies}
 
-\subsection{Precision}
+\section{Precision}
 \label{sec:precision}
 To evaluate \syslang's precision, we wrote policies for each of the seven applications using the Graph Query API and compare them to the compiled \syslang{} policies.
 %
@@ -54,7 +54,7 @@ We found that both versions produced identical results.
 %
 This result demonstrates that \syslang's worse precision is acceptable for practical privacy policies.
 
-\subsection{Efficiency}
+\section{Efficiency}
 \label{sec:efficiency}
 We timed each of the Graph Query API policies against their equivalent \syslang{} policies and compared the results.
 %
@@ -66,5 +66,3 @@ We found that \syslang{} policies are 2-10\% slower than their Graph Query API c
 amounting to 67-91500 milliseconds of additional time.
 %
 This result demonstrates that \syslang{} policies incur an acceptable overhead compared to native Rust policies.
-
-

@@ -1,9 +1,9 @@
-\subsection{Surface Language}
+\section{Surface Language}
 \label{sec:interface}
 
 A \syslang{} policy has two to three sections: its scope, (optionally) its definitions, and its body.
 
-\subsubsection{Scope}
+\subsection{Scope}
 \label{sec:scope}
 
 A \ce{} has three options for the scope of their policy:
@@ -30,7 +30,7 @@ in which case they should use the \emph{In} |name| scope.
 This scope achieves greater precision, but is also tied to the source code; if the name of the data deletion \controller{} changes, the policy must change as well.
 %
 
-\subsubsection{Definitions}
+\subsection{Definitions}
 \label{sec:definitions}
 
 In the Freedit example from \S\ref{sec:overview}, the \ce{}'s final policy was:
@@ -128,7 +128,7 @@ They would do so by appending ``anywhere in the application'' to their definitio
         \hline
         \lstinline[language=CNL]|"a" influences "b"|                              &  There is some transitive data flow and/or control flow dependency from  \lstinline[language=CNL]|"a"| to \lstinline[language=CNL]|"b"|.  \\
         \hline
-        \lstinline[language=CNL]|"a" is marked @@b@@|                             & \lstinline[language=CNL]|"a"| is marked \lstinline[language=CNL]|@@b@@|. \\
+        \lstinline[language=CNL]|"a" is marked @@m@@|                             & \lstinline[language=CNL]|"a"| is marked \lstinline[language=CNL]|@@m@@|. \\
         \hline
         \lstinline[language=CNL]|"a" goes to "b"'s operation|                     & \lstinline[language=CNL]|"a"| goes to the call site associated with \lstinline[language=CNL]|"b"|,
                                                                                     e.g., if \lstinline[language=CNL]|"b"| is an argument to a call site, then \lstinline[language=CNL]|"a"| goes to any of that call site's arguments or return. \\        
@@ -143,14 +143,85 @@ They would do so by appending ``anywhere in the application'' to their definitio
 
 The policy body has three components: iterators, relations, and conjunctions/disjunctions of them.
 %
-\Ces{} use iterators to introduce their variables.
+\paragraph{Iterators}
+Iterators allow \ces{} to loop over a collection of nodes, reasoning about one node at a time.
 %
-\todo{1-2 sentences on why variables are important; need to be able to reason about the same object}
 \syslang{} provides two iterators: a ``For each'' loop or a ``There is'' statement.
 %
-These constructs correspond to the |all| and |any| iterator constructs in Rust, respectively.
+To iterate over a defined variable \lstinline[language=CNL]|"x"|, 
+a \ce{} would write \lstinline[language=CNL]|For each "x" marked @@m@@:| or \lstinline[language=CNL]|There is a "x" marked @@m@@ where:|
 %
-\carolyn{potentially explain in more depth what these mean? Feels fairly self-explanatory.}
+To introduce a new variable,
+a \ce{} would write \lstinline[language=CNL]|For each "x" marked @@m@@:| or \lstinline[language=CNL]|There is a "x" marked @@m@@ where:|
+%
+A ``For each'' loop iterates over each object in the collection and evaluates the body of the loop 
+in the context of the current object \lstinline[language=CNL]|"x"|.
+%
+It succeeds if the body is true for all \lstinline[language=CNL]|"x"|.
+%
+If there are no objects in the collection, the policy is vacuously true.
+%
+\syslang{} allows for vacuity because it evaluates policies on a per-\controller{} basis,
+and some \controller{}s may not have certain markers.
+%
+For example, take the Freedit policy from \S\ref{sec:overview}:
+\begin{lstlisting}[language=CNL]
+Scope: Everywhere
+
+Policy:
+For each "view" marked @@views@@:
+  For each "database store" marked @@store@@:
+    If "view" goes to "database store" then:
+      There is a "date" marked @@time@@ where:
+        "date" goes to "database store"
+\end{lstlisting}
+
+Since the policy's scope is ``Everywhere'', it will be evaluated against every \controller{},
+regardless of whether it handles view data.
+%
+It would be confusing for a \dev{} if their application failed the policy on a \controller{} 
+that does not even contain the \lstinline[language=CNL]|@@views@@|.
+%
+The \ce{} could avoid this problem by changing their scope to list every \controller{} to which they expect the policy to apply,
+but that would defeat \syslang's goal of being independent from source code.
+%
+If the \ce{} wants to insert such a vacuity check, they can leverage the ``There is'' iterator, like so:
+\begin{lstlisting}[language=CNL]
+  Scope: Everywhere
+  
+  Policy:
+  There is a "view" marked @@views@@ where:
+    There is a "database store" marked @@store@@ where:
+      "view" goes to "database store"
+  and
+  For each "view" marked @@views@@:
+    For each "database store" marked @@store@@:
+      If "view" goes to "database store" then:
+        There is a "date" marked @@time@@ where:
+          "date" goes to "database store"
+\end{lstlisting}
+%
+The ``There is'' iterator succeeds if the body is true for at least one \lstinline[language=CNL]|"x"|.
+%
+If there are no objects in the collection, the policy is false.
+%
+Observe that the loop bodies reason about the iterator variables.
+%
+If instead, we eschewed iterators and wrote this policy as:
+\begin{lstlisting}[language=CNL]
+If "view" goes to a "database store" marked @@store@@:
+  There is a "date" marked @@time@@ where:
+    "date" goes to a "database store" marked @@store@@
+\end{lstlisting}
+We would not enforce that \lstinline[language=CNL]|"view"| and \lstinline[language=CNL]|"date"| 
+go to the \emph{same} \lstinline[language=CNL]|"database store"|.
+%
+This policy, however, would pass as long as the date is stored anywhere else in the application,
+even if it is in a context completely unrelated to views.
+%
+Iterators enable for the correct version of the policy by allowing \ces{} to refer to the same object multiple times.
+
+\paragraph{Relations}
 %
 Relations are between two objects: either two variables and a variable and a marker.
 %
@@ -158,7 +229,6 @@ The full list of available relations are in Figure~\ref{f:relations}.
 %
 \syslang{} also supports the negation of each of these relations, e.g. \lstinline[language=CNL]|"a" does not go to "b"|.
 %
-\todo{note how some of these relations are more advanced/technical than others; balance between precision and accessibility}
 \Ces{} use |and| or |or| operators to join iterators or relations together.
 
 \Ces{} also need to indicate the scope of each iterator.

@@ -1,8 +1,8 @@
-\section{Implementation}
+\chapter{Implementation}
 \label{sec:limitations}
 We implement the \syslang{} compiler in 2370 lines of Rust.
 
-\subsection{Direct Dependencies}
+\section{Direct Dependencies}
 \syslang{} intentionally abstracts away details of the PDG to make policies easier to write.
 %
 For example, its relations reason about \emph{transitive} dependencies between PDG nodes.
@@ -22,7 +22,7 @@ to secret data before it reaches some |sink| (perhaps in a security-critical set
 %
 \syslang{} could not express this policy, while \sys{}'s Graph Query API can.
 
-\subsection{Related Nodes}
+\section{Related Nodes}
 Similarly, \syslang{} cannot reason about the direct children, siblings, or antecedents of a given node.
 %
 For example, take the function |send_email(recipient, sender, content)|.
@@ -49,10 +49,12 @@ Its ``goes to ... operation'' relation can check that data marked \lstinline[lan
 %
 \sys{}'s Graph Query API can express the policy.
 
-\subsection{Code Optimization}
+\section{Code Optimization}
 The \syslang{} compiler does not optimize its outputted code, so it misses opportunities for efficiency improvements.
 %
 For example, if a policy contains two iterators over the same data, the \syslang{} compiled policy will traverse the PDG twice to gather the relevant nodes,
 when it could have just done one traversal and stored the result for the subsequent iteration.
 %
 Our \syslang{} prototype supports five levels of bullets, although more could be supported with additional engineering effort.
+
+% iterators w arbitrary conditions

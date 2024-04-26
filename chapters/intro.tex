@@ -1,0 +1,164 @@
+\section{Introduction}
+\label{sec:intro}
+
+Software providers that handle sensitive user data are subject to increasing regulatory scrutiny.
+%
+Regulations like the GDPR and CCPA give users unprecedented control over their data, including rights to access and deletion.
+%
+Enforcement agencies are levy large fines for violations.
+%
+In May of 2023 alone, Ireland fined Meta €1.2 billion for GDPR violations, 
+while the United States fined Amazon \$25 million for failing to honor data deletion requests under the Children’s Online Privacy Protection Act.\cite{todo}
+% https://www.nytimes.com/2023/05/22/business/meta-facebook-eu-privacy-fine.html?searchResultPosition=14
+% https://www.nytimes.com/2023/12/20/technology/ftc-regulation-children-online-privacy.html?searchResultPosition=19
+% https://www.nytimes.com/2023/05/31/technology/amazon-25-million-childrens-privacy.html?searchResultPosition=11
+To ensure compliance, organizations must relate dense legal text to their low-level application source code.
+%
+Currently, software providers use manual audits to verify compliance, which are expensive, time-consuming,
+and infrequent.~\cite{todo}
+
+\sys{} is a static analyzer for Rust applications that \devs{} leverage to find such bugs in their programs before deployment.
+%
+\sys{} evaluates an application by generating its program dependence graph (PDG), 
+where nodes are program entities (functions, arguments, etc.) and edges are control or data flow dependencies.
+%
+\Writers{} leverage \sys{}'s \emph{markers} abstraction to write \policies{} as graph queries over this PDG.
+%
+Markers are labels that connote the privacy semantics of source code entities.
+%
+For example, rather than write a data deletion policy in terms of the particular database library function responsible for deleting data,
+a \writer{} would instead define a |deletes| marker and write their policy in terms of that.
+%
+\Devs{} apply the markers from the policies to the appropriate source code entities.
+%
+They also mark certain functions as \emph{entrypoints} for the analysis.
+%
+\sys{} constructs PDGs for each \controller{}.
+%
+For instance, for a web application, a \dev{} would mark any user-facing endpoints as \controller{}s.
+%
+The \dev{} then runs \sys{} against their application, which generates the application's \emph{marked PDG},
+i.e., its PDG with its markers applied to the appropriate graph nodes.
+%
+\sys{} evaluates the PDG against the policy and outputs whether the application is compliant.
+%
+We imagine that \devs{} run \sys{} continually throughout the development process, perhaps as part of a CI pipeline.
+
+Ideally, \writers{} could specify policies at a high level (e.g., ``all sensitive data is encrypted before it exits the application'').
+%
+Such a high-level specification is clear, concise, and portable across applications.
+%
+Prior to this work, however, \sys{} did not support this level of abstraction.
+%
+Instead, \writers{} had to write policies using \sys{]'s Graph Query API.
+%
+Graph Query API policies are low-level graph queries over the application's PDG, written in Rust.
+%
+This design limited the available pool of policy writers to those with an in-depth understanding of Rust programming and \sys{}'s PDG representation.
+%
+Since policies were programs, they had the same problems as the applications they evaluated: they were buggy, laborious to write, and comprehensible only to programmers familiar with the application.
+%
+It was crucial that we address this problem; the quality of \sys's analysis was moot if organizations could not use it easily (or even correctly).
+
+We address this issue with \syslang{}, a DSL for \policies{} over PDGs.
+%
+Natural language offers the intuitive quality we sought, while the defined grammar allowed us to avoid the ambiguity of unconstrained English.
+%
+We pair \syslang{} with a compiler that translates policies to \sys{} graph queries.
+%
+\Devs{} can then invoke \sys{} on their application,
+which will generate its PDG, evaluate it against the compiled \syslang{} policy,
+and output whether the application is compliant.
+%
+
+\syslang{} must address a few challenges.
+%
+First, it must be accessible yet unambiguous.
+%
+\syslang{} should not require \writers{} to reason about low-level source code entities, such as particular functions or types.
+%
+Such a design would tie the policy to the application's implementation, effectively restricting policy writing to the application's \devs.
+%
+It would also make the policies brittle to source code changes and less portable across applications.
+%
+\syslang{} should instead be accessible to a broader range of technical stakeholders.
+%
+Ideally, a \ce--someone who knows how to program, but is not necessarily familiar with the particular implementation details--would write policies.
+%
+% Larger organizations have dedicated compliance teams that could write such policies.~\cite{todo}
+% %
+% In smaller organizations, the \ce{} could be a team's manager.\carolyn{this level of detail is probably not necessary}
+% %
+% Natural language is the most obvious intuitive structure for specifying these policies, 
+% especially since privacy regulations are specified in natural language.\carolyn{I don't like this sentence.}
+% %
+% However, natural language is also ambiguous.
+% %
+% For example, the sentence ``|A| or |B| and |C|'' is vague; which operator should take higher precedence?
+% %
+% Programming languages have well-known constructs for handling such ambiguity, such as parenthesized expressions or operator precedence rules.~\cite{todo}
+% %
+Natural language is an obvious intuitive structure for specifying these policies.
+%
+However, unconstrained natural language can be ambiguous, which is unacceptable for a privacy policy.
+%
+\syslang{} must reject ambiguous policies while not becoming so onerous to use that it 
+requires the same expertise and time investment as the existing Graph Query interface.
+
+Second, \syslang{} should be expressive.
+%
+A trivial way of eliminating ambiguity would be to define a highly restricted natural language interface that allows for only a handful of policy formulations.
+%
+This structure, however, would not be expressive enough to meet the needs of complex applications, 
+which must abide by a wide range of privacy requirements.~\cite{todo}
+%
+Instead, \syslang{} should be flexible enough to apply across policy and application domains.
+
+Third, \syslang{} should be precise.
+%
+\sys{}'s PDG representation preserves dependencies at a high level of precision.
+%
+% It can reason about the dependencies of each distinct function argument or fields of a type.\carolyn{confusing sentence}
+%
+With the existing graph query interface, \writers{} can leverage this precision to make highly specific queries.
+%
+For instance, they can count the exact number of data flow edges between two particular nodes in the graph,
+or query whether data flowed to a particular argument of a single call site.
+%
+However, \policies{} often do not require this level of precision.
+%
+If \syslang{} were to support it, it would not be accessible--it would be closely tied to the source code,
+and would support such a wide breadth of query patterns that \writers{} would require expertise to select the correct ones.
+%
+However, if policies are not sufficiently precise, they are more likely to produce false positives or false negatives when run against application code.
+%
+\carolyn{give an example of this? feels too weedy for an intro.}
+%
+% For certain policies, such precision is required for correctness.
+% %
+% For example, if only a particular field of a type is sensitive user data, then a \dev{} should apply a |sensitive| marker to that field only.
+% \carolyn{hopefully the reasoning for the above is fairly intuitive? perhaps expand}
+%
+\syslang{} should support sufficiently precise queries to express common \policies{}, 
+while not overwhelming the \writer{} with the full power of \sys{}'s PDG representation. 
+
+Fourth, \syslang{} policies, once compiled, should be similarly efficient to graph queries originally written in Rust.
+%
+This goal is necessary so that \sys{} remains practical for CI use.
+
+We evaluate \syslang{} against seven third-party Rust applications.
+%
+% We emulate the role of a \ce, formulating policies for the applications after reading documentation and using online demos.
+%
+\syslang{} can express a wide range of \policies{} for these applications.
+%
+These policies are sufficiently precise that they succeed on correct implementations and fail on buggy ones. 
+%
+They were often simpler than the equivalent Rust graph query policies that we had defined earlier, with no loss of correctness.
+
+% This thesis makes three contributions:
+% \begin{enumerate}[nosep]
+%     \item The \syslang{} grammar for specifiying \policies.
+%     \item The \syslang{} compiler to translate \policies{} to graph queries over a PDG.
+%     \item An evaluation demonstrating that \syslang{} is expressive, precise, and efficient, with some limitations.
+% \end{enumerate}

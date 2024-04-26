@@ -1,0 +1,31 @@
+\subsection{Compiler}
+
+Next, the \syslang{} compiler translates policies into graph queries over \sys{}'s PDG,
+which \devs{} can then check against their application.
+%
+The compiler first parses the policy into an abstract syntax tree (AST).
+%
+It then traverses this AST to verify that the policy is properly scoped.
+%
+It errors if any variables are used in a relation without first being introduced by an iterator or definition.
+%
+It also prevents duplicate introductions of the same variable in a single scope.
+
+Once the compiler verifies that the policy is properly scoped,
+it performs a second pass over the AST to compile it to Rust code.
+%
+It performs compilation via template expansion.
+%
+It identifies the relevant template for each node in the AST,
+substituting in the policy's variables and markers.
+%
+The |and|, |or|, |for each|, |there is|, and |if| constructs correspond to Rust builtin operators.
+%
+The remainder of the expressions compile to operations using \sys{}'s Graph Query API.
+%
+This API offers functions for common operations over the PDG.
+%
+For example, the ``goes to'' relation corresponds to the |flows_to| \sys{} API function.
+%
+The compiler also outputs boilerplate code to run \sys{} against the policy.
+

@@ -1,0 +1,153 @@
+% %--------------------
+% % Packages
+% % -------------------
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{syntax}
+\usepackage{listings, multicol}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[compact,small]{titlesec}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{breakurl}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\usepackage[
+  backend=biber,
+  style=numeric-comp,
+  minalphanames=3,
+  isbn=false,
+  sortcites=true,
+  sorting=anyt,
+  abbreviate=false,
+  url=false,
+  doi=false,
+  maxnames=99,
+  minbibnames=3,
+  maxbibnames=99]{biblatex}
+
+\addbibresource{main.bib}
+
+\frenchspacing
+\linespread{1.2}
+
+\newcommand{\cmt}[3]{
+{\footnotesize [\textcolor{#1}{\textsf{#2: #3}}]}
+}
+\newcommand{\todo}[1]{
+\textcolor{red}{#1}
+}
+\newcommand{\malte}[1]{\cmt{blue}{Malte}{#1}}
+\newcommand{\justus}[1]{\cmt{olive}{Justus}{#1}}
+\newcommand{\shriram}[1]{\cmt{teal}{Shriram}{#1}}
+\newcommand{\livia}[1]{\cmt{red}{Livia}{#1}}
+\newcommand{\carolyn}[1]{\cmt{purple}{Carolyn}{#1}}
+
+\def\sys{\text{Para\-legal}}
+\def\syslang{\text{Para\-language}}
+\newcommand{\code}[1]{{\footnotesize\texttt{#1}}}
+\newcommand{\marker}[1]{\code{\color{blue}{#1}}}
+\newcommand{\cnlexp}{Controlled Natural Language (CNL)}
+\newcommand{\dev}{developer}
+\newcommand{\devs}{developers}
+\newcommand{\Devs}{Developers}
+\newcommand{\policies}{privacy policies}
+\newcommand{\writer}{policy writer}
+\newcommand{\writers}{policy writers}
+\newcommand{\Writers}{Policy writers}
+\newcommand{\ce}{compliance engineer}
+\newcommand{\ces}{compliance engineers}
+\newcommand{\Ces}{Compliance engineers}
+\newcommand{\policylang}{privacy policy specification language}
+\newcommand{\controller}{entrypoint}
+
+\lstdefinelanguage{Rust}{%
+    morekeywords={impl,let,in,return,fn,struct,enum,mut,for,region,where,if,else,pub,use},
+    sensitive=true,
+    otherkeywords={{->}, {=}, {|}, {:}, {.}, {&}, {?}},
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+    morestring=[d]',
+}
+\lstdefinelanguage{CNL}{
+  morestring=[b]",
+  stringstyle=\color{violet},
+  moredelim={[is][\color{teal}]{@@}{@@}},
+  moredelim={[is][\color{blue}]{/*}{*/}}
+}
+
+% \lstdefinelanguage{ErrorMessage}{
+%   morestring=[b]",
+%   moredelim={[is][\color{violet}]{@@}{@@}},
+%   moredelim={[is][\color{blue}]{/*}{*/}}
+% }
+
+\lstset{
+    language=Rust,
+    basicstyle=\ttfamily\footnotesize,
+    columns=fullflexible,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+}
+
+\setlist{leftmargin=*}
+
+\setlength{\fboxsep}{1pt}%
+
+% \input{abstract}
+
+\begin{document}
+
+% This has to go after \begin{document}
+\lstMakeShortInline|
+
+\thispagestyle{empty}
+
+\begin{center}
+    \vspace*{1em}{\Huge Title\par}
+    
+    \vspace*{1em}{\huge Carolyn Zech\par}
+    
+    \vspace*{3em}{\LARGE Advisor: Malte Schwarzkopf\par Reader: Shriram Krishnamurthi\par}
+    
+    \vspace*{10em}\includegraphics[scale=0.08]{graphics/logo.png}\par
+    \vspace*{1em}{\LARGE Department of Computer Science\par Brown University\par Providence, RI \par May 2024 \par}
+\end{center}
+\newpage
+
+\tableofcontents
+\newpage
+
+\input{chapters/abstract.tex}
+\newpage
+% \input{chapters/acknowledgements.tex}
+\input{chapters/intro.tex}
+% \input{chapters/background.tex}
+\input{chapters/overview.tex}
+\input{chapters/design.tex}
+\input{chapters/impl.tex}
+\input{chapters/eval.tex}
+\input{chapters/related-work.tex}
+\input{chapters/conclusion.tex}
+\newpage
+\printbibliography{}
+\newpage
+\input{chapters/appendix.tex}
+
+\end{document}

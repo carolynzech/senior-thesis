@@ -1,0 +1,145 @@
+@inproceedings{resin,
+  author    = {Yip, Alexander and Wang, Xi and Zeldovich, Nickolai and Kaashoek, M. Frans},
+  title     = {Improving Application Security with Data Flow Assertions},
+  year      = {2009},
+  isbn      = {9781605587523},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/1629575.1629604},
+  doi       = {10.1145/1629575.1629604},
+  abstract  = {Resin is a new language runtime that helps prevent security vulnerabilities, by allowing programmers to specify application-level data flow assertions. Resin provides policy objects, which programmers use to specify assertion code and metadata; data tracking, which allows programmers to associate assertions with application data, and to keep track of assertions as the data flow through the application; and filter objects, which programmers use to define data flow boundaries at which assertions are checked. Resin's runtime checks data flow assertions by propagating policy objects along with data, as that data moves through the application, and then invoking filter objects when data crosses a data flow boundary, such as when writing data to the network or a file.Using Resin, Web application programmers can prevent a range of problems, from SQL injection and cross-site scripting, to inadvertent password disclosure and missing access control checks. Adding a Resin assertion to an application requires few changes to the existing application code, and an assertion can reuse existing code and data structures. For instance, 23 lines of code detect and prevent three previously-unknown missing access control vulnerabilities in phpBB, a popular Web forum application. Other assertions comprising tens of lines of code prevent a range of vulnerabilities in Python and PHP applications. A prototype of Resin incurs a 33\% CPU overhead running the HotCRP conference management application.},
+  booktitle = {Proceedings of the ACM SIGOPS 22nd Symposium on Operating Systems Principles},
+  pages     = {291–304},
+  numpages  = {14},
+  keywords  = {sql injection, php, python, privacy, security, xss, web},
+  location  = {Big Sky, Montana, USA},
+  series    = {SOSP '09}
+}
+
+@inproceedings{ponder,
+  author    = {Damianou, Nicodemos and Dulay, Naranker and Lupu, Emil and Sloman, Morris},
+  title     = {The Ponder Policy Specification Language},
+  year      = {2001},
+  isbn      = {3540416102},
+  publisher = {Springer-Verlag},
+  address   = {Berlin, Heidelberg},
+  abstract  = {The Ponder language provides a common means of specifying security policies that map onto various access control implementation mechanisms for firewalls, operating systems, databases and Java. It supports obligation policies that are event triggered condition-action rules for policy based management of networks and distributed systems. Ponder can also be used for security management activities such as registration of users or logging and auditing events for dealing with access to critical resources or security violations. Key concepts of the language include roles to group policies relating to a position in an organisation, relationships to define interactions between roles and management structures to define a configuration of roles and relationships pertaining to an organisational unit such as a department. These reusable composite policy specifications cater for the complexity of large enterprise information systems. Ponder is declarative, strongly-typed and object-oriented which makes the language flexible, extensible and adaptable to a wide range of management requirements.},
+  booktitle = {Proceedings of the International Workshop on Policies for Distributed Systems and Networks},
+  pages     = {18–38},
+  numpages  = {21},
+  series    = {POLICY '01}
+}
+
+@article{jif,
+  author     = {Myers, Andrew C. and Liskov, Barbara},
+  title      = {Protecting Privacy Using the Decentralized Label Model},
+  year       = {2000},
+  issue_date = {Oct. 2000},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {9},
+  number     = {4},
+  issn       = {1049-331X},
+  url        = {https://doi.org/10.1145/363516.363526},
+  doi        = {10.1145/363516.363526},
+  abstract   = {Stronger protection is needed for the confidentiality and integrity of  data, because programs containing untrusted code are the rule rather than the exception. Information flow control allows the enforcement of end-to-end security policies, but has been difficult to put into practice. This article describes the decentralized label model, a new label model for control of information flow in systems with mutual distrust and decentralized authority. The model improves on existing multilevel security models by allowing users to declassify information in a decentralized way, and by improving support for fine-grained data sharing. It supports static program analysis of information flow, so that programs can be certified to permit only acceptable information flows, while largely avoiding  the overhead of run-time checking. The article introduces the language Jif, an extension to Java that provides static checking of information flow using the decentralized label model.},
+  journal    = {ACM Trans. Softw. Eng. Methodol.},
+  month      = {oct},
+  pages      = {410–442},
+  numpages   = {33},
+  keywords   = {end-to-end, information flow controls, confidentiality, roles, policies, integrity, declassification, lattice, type checking, downgrading, principals}
+}
+
+@article{hotnets,
+  author    = {Grewal, Karuna and Godfrey, P. Brighten and Hsu, Justin},
+  booktitle = {},
+  editor    = {},
+  url       = {https://doi.org/10.1145/3626111.3628181},
+  title     = {Expressive Policies For MicroService Networks},
+  year      = {2023},
+  series    = {HotNets '23}
+}
+
+@inproceedings{legalese,
+  author    = {Sen, Shayak and Guha, Saikat and Datta, Anupam and Rajamani, Sriram K. and Tsai, Janice and Wing, Jeannette M.},
+  booktitle = {2014 IEEE Symposium on Security and Privacy},
+  title     = {Bootstrapping Privacy Compliance in Big Data Systems},
+  year      = {2014},
+  volume    = {},
+  number    = {},
+  pages     = {327-342},
+  doi       = {10.1109/SP.2014.28}
+}
+
+@inproceedings{privguard,
+  author    = {Lun Wang and Usmann Khan and Joseph Near and Qi Pang and Jithendaraa Subramanian and Neel Somani and Peng Gao and Andrew Low and Dawn Song},
+  title     = {{PrivGuard}: Privacy Regulation Compliance Made Easier},
+  booktitle = {31st USENIX Security Symposium (USENIX Security 22)},
+  year      = {2022},
+  isbn      = {978-1-939133-31-1},
+  address   = {Boston, MA},
+  pages     = {3753--3770},
+  url       = {https://www.usenix.org/conference/usenixsecurity22/presentation/wang-lun},
+  publisher = {USENIX Association},
+  month     = aug
+}
+
+@inproceedings{riverbed,
+  author    = {Wang, Frank and Ko, Ronny and Mickens, James},
+  title     = {Riverbed: Enforcing User-Defined Privacy Constraints in Distributed Web Services},
+  year      = {2019},
+  isbn      = {9781931971492},
+  publisher = {USENIX Association},
+  address   = {USA},
+  abstract  = {Riverbed is a new framework for building privacy-respecting web services. Using a simple policy language, users define restrictions on how a remote service can process and store sensitive data. A transparent Riverbed proxy sits between a user's front-end client (e.g., a web browser) and the back-end server code. The back-end code remotely attests to the proxy, demonstrating that the code respects user policies; in particular, the server code attests that it executes within a Riverbed-compatible managed runtime that uses IFC to enforce user policies. If attestation succeeds, the proxy releases the user's data, tagging it with the user-defined policies. On the server-side, the Riverbed runtime places all data with compatible policies into the same universe (i.e., the same isolated instance of the full web service). The universe mechanism allows Riverbed to work with unmodified, legacy software; unlike prior IFC systems, Riverbed does not require developers to reason about security lattices, or manually annotate code with labels. Riverbed imposes only modest performance overheads, with worst-case slowdowns of 10\% for several real applications.},
+  booktitle = {Proceedings of the 16th USENIX Conference on Networked Systems Design and Implementation},
+  pages     = {615–629},
+  numpages  = {15},
+  location  = {Boston, MA, USA},
+  series    = {NSDI'19}
+}
+
+@inproceedings{rulekeeper,
+  author = {Ferreira, Mafalda and Brito, Tiago and Santos, José and Santos, Nuno},
+  year   = {2023},
+  month  = {05},
+  pages  = {2817-2834},
+  title  = {RuleKeeper: GDPR-Aware Personal Data Compliance for Web Frameworks},
+  doi    = {10.1109/SP46215.2023.10179395}
+}
+
+@inproceedings{logical-english,
+  author = {Kowalski, R. and Dávila, J. and Sartor, G. and Calejo, M.},
+  year   = {2023},
+  title  = {Logical English for Law and Education},
+  doi    = { https://doi.org/10.1007/978-3-031-35254-6_24}
+}
+
+@online{lemmy,
+  title = {Lemmy: A link aggregator and forum for the fediverse},
+  url   = {https://github.com/LemmyNet/lemmy}
+}
+
+@online{hyperswitch,
+  title = {Hyperswitch: An open source payments switch written in Rust to make payments fast, reliable and affordable},
+  url   = {https://github.com/juspay/hyperswitch}
+}
+
+@online{atomic,
+  title = {AtomicServer: a lightweight, yet powerful CMS / Graph Database},
+  url   = {https://github.com/atomicdata-dev/atomic-server}
+}
+
+@online{plume,
+  title = {Plume: A federated blogging engine based on ActivityPub},
+  url   = {https://github.com/Plume-org/Plume}
+}
+
+@online{websubmit,
+  title      = {Websubmit-rs: A Simple Class Submission System},
+  shorttitle = {Websubmit-rs},
+  author     = {Schwarzkopf, Malte},
+  year       = {2021},
+  month      = oct,
+  url        = {https://github.com/ms705/websubmit-rs}
+}

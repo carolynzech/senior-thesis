@@ -1,0 +1,70 @@
+\section{Evaluation}
+
+We evaluate \syslang{} against seven popular, third-party Rust applications to answer four questions:
+%
+\begin{enumerate}[nosep]
+    \item Can \syslang's grammar express real-world \policies? (\S\ref{sec:expressivity})
+    % \item Is \syslang{} intuitive and relatively low-effort \carolyn{bad phrasing}? (\S\ref{sec:accessibility})
+    \item Does \syslang's compiler correctly translate \policies to graph queries without loss of precision? (\S\ref{sec:precision})
+    \item Does \syslang's compiler produce efficient, optimized queries? (\S\ref{sec:efficiency})
+\end{enumerate}
+%
+
+\subsection{Expressivity}
+\label{sec:expressivity}
+
+For each of the applications, we encoded their \syslang{} policies by
+emulating the role of a \ce{}.
+%
+We did not look at source code, but rather used demo applications and documentation.
+%
+We found that \syslang{} was expressive enough to represent all the policies we wanted to check.
+%
+We also found that applications could often use identical policies.
+%
+For instance, two applications (mCaptcha and Plume) use the same data deletion policy.
+%
+Three others (Hyperswitch, Lemmy, and mCaptcha) use the same access control policy
+except for application-specific markers.
+%
+In cases where the policy was inherently dynamic, we defined static approximations.
+%
+For example, a GDPR data deletion policy would state that some \controller{} deletes \emph{all} of a user's data.
+%
+\sys{} cannot verify that the application actually deletes all of the user's data,
+since the exact contents of that data is only known at runtime.
+%
+However, it can ensure that for each type marked |user_data|, 
+there is some data of that type that goes to a |deleter|.
+%
+This policy is expressive enough to find bugs where applications forget to delete a given type of user data,
+but cannot catch bugs where an application only deletes \emph{some} of the data of a given type.
+%
+\todo{table summarizing applications and policies}
+
+\subsection{Precision}
+\label{sec:precision}
+To evaluate \syslang's precision, we wrote policies for each of the seven applications using the Graph Query API and compare them to the compiled \syslang{} policies.
+%
+The Rust policies use API operations (namely, reasoning about direct dependencies of a given node) that are out of \syslang's scope.
+%
+We ran both sets of policies on compliant versions of the applications and on versions with injected bugs.
+%
+We found that both versions produced identical results.
+%
+This result demonstrates that \syslang's worse precision is acceptable for practical privacy policies.
+
+\subsection{Efficiency}
+\label{sec:efficiency}
+We timed each of the Graph Query API policies against their equivalent \syslang{} policies and compared the results.
+%
+We averaged the results over 10 runs each.
+%
+We would expect \syslang{} policies to be slower on average because of its compiler limitations (\S\ref{sec:limitations}).
+%
+We found that \syslang{} policies are 2-10\% slower than their Graph Query API counterparts,
+amounting to 67-91500 milliseconds of additional time.
+%
+This result demonstrates that \syslang{} policies incur an acceptable overhead compared to native Rust policies.
+
+

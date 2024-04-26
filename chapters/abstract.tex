@@ -1,0 +1,19 @@
+\section*{Abstract}
+
+%
+Software providers handling sensitive data must verify that their applications conform to a wide breadth of \policies.
+%
+For example, to comply with the GDPR, providers must check that their applications contain logic to delete all of a user's personal data.
+% 
+Existing tools to express \policies{} are either expressive but overly technical, or are nontechnical but also not expressive.
+%
+\syslang{} is a new \policylang{} that is both expressive and accessible to nontechnical stakeholders.
+%
+\syslang{} can specify a wide range of \policies{} in an intuitive, natural language format.
+%
+Our \syslang{} compiler outputs graph queries over a program dependence graph (PDG),
+which developers can then run against their applications to verify compliance.
+%
+We evaluate \syslang{} on seven real-world Rust applications and find that it is
+sufficiently expressive, precise, and efficient.
+\carolyn{some actual hard data would be nice here -- come back after eval is fleshed out}

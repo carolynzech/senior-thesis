@@ -1,0 +1,69 @@
+\appendix
+\section{Grammar}
+\label{sec:grammar}
+
+\begin{grammar}
+<paralegal policy> ::= 
+    "Scope:" <scope> 
+    ["Definitions:" <definitions>] 
+    "Policy:" <exprs>
+
+<definitions> ::= <definition> <definitions> | <definition>
+
+<definition> ::=
+	<bullet> <variable> "is each" <variable_intro> "where:" (<exprs> | <body>)
+
+<scope> ::= "Everywhere:" | "Somewhere:" | "In <name>":
+
+<exprs> ::= 
+	<clause> <operator> <exprs> |
+	<clause> |
+	<only via relations>
+
+<bullet> ::= <number>. | <number>) | <letter>. | <letter>)
+
+<operator> ::= "and" | "or"
+
+<clause> ::= <clause intro> <clause body>
+
+<clause intro> ::= <for each> | <there is>
+
+<for each> ::= <bullet> "For each" <variable intro>":"
+
+<there is> ::= <bullet> "There is a" <variable intro> "where:"
+
+<variable intro> ::= <variable> "input"
+    \alt <variable> "item"
+	\alt <variable>
+	\alt <variable> "marked" <marker>
+	\alt <variable> "type marked" <marker>
+	\alt <variable> "that produces" <variable>
+
+<clause body> ::= (<clause> | <body>) <operator> <clause body> 
+	\alt <clause>
+	\alt <body>
+
+<body> ::= <bullet> <relation> <operator> <body> 
+    \alt <conditional> 
+    \alt <bullet> <relation>
+
+<conditional> ::= <bullet> "If" <relation> " then:" <clause body> 
+
+<only via relations> ::= <only via relation> | <only via relation> <operator> <only via relations>
+
+<only via relation> ::= 
+	"Each" <variable intro> "goes to a" 
+    (<variable> | <variable> "marked" <marker>) 
+	"only via a" (<variable> | <variable with marker>)
+    "marked" <marker>
+
+<relation> ::= <variable> "does not influence" <variable>
+    \alt <variable> "influences" <variable>
+	\alt <variable> "goes to" <variable>
+	\alt <variable> "does not go to" <variable>
+	\alt <variable> "affects whether" <variable> "happens"
+	\alt <variable> "does not affect whether" <variable> "happens"
+	\alt <variable> "is marked" <marker>
+	\alt <variable> "is not marked" <marker>
+	\alt <variable> "goes to the operation associated with" <variable>
+\end{grammar}

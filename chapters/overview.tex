@@ -1,0 +1,115 @@
+\section{Overview}
+\label{sec:overview}
+
+\Ces{} and \devs{} collaborate to apply \sys{} to their applications and catch privacy bugs before deployment.
+%
+We demonstrate \syslang's role in this process through an example.
+
+Freedit is a text-based social media application, similar to Reddit or Twitter~\cite{freedit}.
+%
+The application stores a user's viewing history, but deletes it after three days~\cite{freedit-pageviews}.
+%
+To verify that the source code upholds the policy, a \ce{} must first ensure that any viewing data is always stored alongside the current time.
+%
+Otherwise, the application would have no way to check later whether the data is expired.
+%
+To encode this policy in \syslang{}, the \ce{} first considers which operations or data are relevant to the policy.
+%
+They determine that the relevant concepts for this policy are \emph{(i)} the viewing data,
+\emph{(ii)} any database store operations, and \emph{(iii)} the current date.
+%
+They define |views|, |store|, and |date| markers to represent each of these ideas.
+%
+The \ce{} must have some technical background to establish these concepts--they must, for example, understand what a database is,
+and the kind of data that it would store.
+%
+However, they do not need to understand how the source code implements this functionality.
+%
+
+Next, the \ce{} writes the policy in terms of these markers.
+%
+They know that a \dev{} will eventually apply their markers to one or more source code entities.
+%
+Their policy must therefore reason about these marked object(s).
+%
+To do so, the \ce{} introduces \emph{variables} into their policy.
+%
+A variable represents a single source code entity with a given marker.
+%
+In this example, the \ce{} introduces their variables as follows:
+\begin{lstlisting}[language=CNL]
+For each "view" marked @@views@@:
+  For each "database store" marked @@store@@:
+\end{lstlisting}
+%
+Variables are in purple and markers are in teal.
+
+The \ce{} must now establish that a given \lstinline[language=CNL]|"database store"| actually stores this \lstinline[language=CNL]|"view"|--there could be database operations for other types of data that do not need to be dated.
+%
+So, the \ce{} introduces the first \emph{relation} into their policy:
+\begin{lstlisting}[language=CNL]
+For each "view" marked @@views@@:
+  For each "database store" marked @@store@@:
+    If "view" goes to "database store" then:
+\end{lstlisting}
+%
+Relations are expressions that relate two objects to each other--either two variables, or a variable and a marker.
+
+Note that the \ce{} need not specify \emph{how} or \emph{when} the \lstinline[language=CNL]|"view"| reaches the \lstinline[language=CNL]|"database store"|.
+%
+The \lstinline[language=CNL]|"view"| could undergo any number of data transformations first--e.g., it could be inserted as a field of a type containing other user data,
+and that type is then stored.
+%
+The \ce{} does not worry about these implementation details; they must only understand that the \lstinline[language=CNL]|"view"| reaches the \lstinline[language=CNL]|"database store"|
+in some form, at some point.
+%
+
+The \ce{} then defines the consequent of the conditional:
+\begin{lstlisting}[language=CNL]
+For each "view" marked @@views@@:
+  For each "database store" marked @@store@@:
+    If "view" goes to "database store" then:
+      There is a "date" marked @@time@@ where:
+        "date" goes to "database store"
+\end{lstlisting}
+%
+% By using variables, the \ce{} has ensured that the \lstinline[language=CNL]|"view"| and \lstinline[language=CNL]|"date"| go to the \emph{same} \lstinline[language=CNL]|"database store"|.
+%
+% The ``goes to'' relation enforces that the PDG reflects a transitive data dependency between \lstinline[language=CNL]|"view"| and the \lstinline[language=CNL]|"database store"|.
+%
+The consequent ensures that if the view is stored, that some date is also stored.
+%
+Since both the antecedent and the consequent reason about the same \lstinline[language=CNL]|"database store"| variable,
+the \ce{} ensures that the date and view are stored \emph{together}.
+%
+Without variables, the \ce{} could only write that the current date goes to some entity marked \lstinline[language=CNL]|"database store"|,
+but this could be a completely different store unrelated to views.
+
+Finally, the \ce{} establishes the \emph{scope} of their policy,
+%
+For instance, a GDPR data deletion policy would assert that somewhere in the application, there is logic to delete all user data.
+%
+In this case, the \ce{} determines that the entire application should uphold this policy, so they select the ``Everywhere'' scope,
+producing the final policy:
+
+\begin{lstlisting}[language=CNL]
+Scope: Everywhere
+
+Policy:
+For each "view" marked @@views@@:
+  For each "database store" marked @@store@@:
+    If "view" goes to "database store" then:
+      There is a "date" marked @@time@@ where:
+        "date" goes to "database store"
+\end{lstlisting}
+
+The \ce{} then sends this policy to a \dev{}, 
+who leverages their implementation knowledge to apply the markers to the appropriate source code entities.
+%
+The \dev{} then runs \syslang{}'s compiler, which outputs a Rust binary containing an equivalent graph query over a marked PDG.
+%
+They edit the outputted file to provide application-specific information--e.g., the source code directory to analyze--then run it with a |cargo run| command.
+%
+The binary file invokes \sys{} to generates the application's marked PDG, evaluates the PDG against the compiled policy,
+and prints whether the policy passed or failed.
+%

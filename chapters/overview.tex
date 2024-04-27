@@ -9,7 +9,8 @@ Freedit is a text-based social media application, similar to Reddit or Twitter~\
 %
 The application stores a user's viewing history, but deletes it after three days~\cite{freedit-pageviews}.
 %
-To verify that the source code upholds the policy, a \ce{} must first ensure that any viewing data is always stored alongside the current time.
+To verify that the source code upholds the policy, 
+a \ce{} must first ensure that any viewing data is always stored alongside the current date.
 %
 Otherwise, the application would have no way to check later whether the data is expired.
 %
@@ -18,7 +19,7 @@ To encode this policy in \syslang{}, the \ce{} first considers which operations 
 They determine that the relevant concepts for this policy are \emph{(i)} the viewing data,
 \emph{(ii)} any database store operations, and \emph{(iii)} the current date.
 %
-They define |views|, |store|, and |date| markers to represent each of these ideas.
+They define |views|, |store|, and |time| markers to represent each of these ideas.
 %
 The \ce{} must have some technical background to establish these concepts--they must, for example, understand what a database is,
 and the kind of data that it would store.
@@ -44,9 +45,10 @@ For each "view" marked @@views@@:
 %
 Variables are in purple and markers are in teal.
 
-The \ce{} must now establish that a given \lstinline[language=CNL]|"database store"| actually stores this \lstinline[language=CNL]|"view"|--there could be database operations for other types of data that do not need to be dated.
+The \ce{} must now establish that a given \lstinline[language=CNL]|"database store"| actually stores this \lstinline[language=CNL]|"view"|--
+if it stores some other, unrelated data, the policy does not apply.
 %
-So, the \ce{} introduces the first \emph{relation} into their policy:
+To do so, they introduce the first \emph{relation} into their policy:
 \begin{lstlisting}[language=CNL]
 For each "view" marked @@views@@:
   For each "database store" marked @@store@@:
@@ -82,12 +84,13 @@ The consequent ensures that if the view is stored, that some date is also stored
 Since both the antecedent and the consequent reason about the same \lstinline[language=CNL]|"database store"| variable,
 the \ce{} ensures that the date and view are stored \emph{together}.
 %
-Without variables, the \ce{} could only write that the current date goes to some entity marked \lstinline[language=CNL]|"database store"|,
-but this could be a completely different store unrelated to views.
+Without variables, the \ce{} could only write that the current date goes to some entity marked \lstinline[language=CNL]|@@store@@|,
+but this could be a completely different store unrelated to \lstinline[language=CNL]|"view"|.
 
 Finally, the \ce{} establishes the \emph{scope} of their policy,
 %
-For instance, a GDPR data deletion policy would assert that somewhere in the application, there is logic to delete all user data.
+For instance, a GDPR data deletion policy would assert that somewhere in the application, 
+all of a user's data is deleted.
 %
 In this case, the \ce{} determines that the entire application should uphold this policy, so they select the ``Everywhere'' scope,
 producing the final policy:
@@ -106,10 +109,11 @@ For each "view" marked @@views@@:
 The \ce{} then sends this policy to a \dev{}, 
 who leverages their implementation knowledge to apply the markers to the appropriate source code entities.
 %
-The \dev{} then runs \syslang{}'s compiler, which outputs a Rust binary containing an equivalent graph query over a marked PDG.
+The \dev{} runs \syslang{}'s compiler, which outputs a Rust binary containing an equivalent graph query over a marked PDG.
 %
 They edit the outputted file to provide application-specific information--e.g., the source code directory to analyze--then run it with a |cargo run| command.
 %
-The binary file invokes \sys{} to generates the application's marked PDG, evaluates the PDG against the compiled policy,
-and prints whether the policy passed or failed.
+The binary file invokes \sys{}, which generates the application's marked PDG, 
+evaluates it against the compiled policy,
+and outputs whether the policy passed or failed.
 %

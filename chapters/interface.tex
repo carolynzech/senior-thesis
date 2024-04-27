@@ -1,7 +1,7 @@
 \section{Surface Language}
 \label{sec:interface}
 
-A \syslang{} policy has two to three sections: its scope, (optionally) its definitions, and its body.
+A \syslang{} policy has two to three sections: its scope, its definitions (optional), and its body.
 
 \subsection{Scope}
 \label{sec:scope}
@@ -24,10 +24,11 @@ since that would require every \controller{} storing user data to also delete it
 %
 Instead, such a policy could use a ``Somewhere'' scope to mandate that at least one \controller{} deletes user data.
 %
-\Ces{} may wish to be more specific and ensure that a particular \controller{} deletes user data as specified,
+\Ces{} may wish to be more specific and ensure that a particular \controller{} obeys a policy,
 in which case they should use the \emph{In} |name| scope.
 %
-This scope achieves greater precision, but is also tied to the source code; if the name of the data deletion \controller{} changes, the policy must change as well.
+This scope achieves greater precision, but is also tied to the source code; 
+if the name of the \controller{} changes, the policy must change as well.
 %
 
 \subsection{Definitions}
@@ -67,7 +68,7 @@ For each "view store":
   There is a "date" marked time where:
     "date" goes to "view store" 
 \end{lstlisting}
-This policy is also more efficient because it avoids the double ``for each'' loop of the original,
+This policy is also more efficient because it avoids the double |For each| loop of the original,
 which may be expensive in an application that has many \lstinline[language=CNL]|"view"|s or \lstinline[language=CNL]|"database store"|s.
 %
 
@@ -76,11 +77,9 @@ Since \sys{} constructs per-\controller{} PDGs,
 %
 The scope of the policy dictates which \controller{}(s) must uphold the policy.
 %
-Since policy bodies only consider nodes in the current \controller{}'s PDGs,
-definitions are also, by default, \controller{}-specific
+Since policy bodies only consider nodes in the current \controller{}'s PDG,
+definitions are also, by default, \controller{}-specific.
 
-By default, definitions are also evaluated on a per-\controller{} basis.
-%
 However, a \ce{} may want to gather all nodes meeting a certain condition \emph{across \controller{}s}.
 %
 For instance, consider a policy that states that for each |sensitive| type that the application |store|s,
@@ -88,55 +87,27 @@ that type is also |delete|d.
 %
 It is unlikely that a single \controller{} would both store the sensitive data \emph{and} delete it.
 %
-Instead, the \ce{} could declare a definition to gather the relevant types from across the application,
+Instead, the \ce{} could declare a definition to gather the sensitive types that are stored across the application,
 then write a policy that states that some \controller{} must delete those types.
 %
-They would do so by appending ``anywhere in the application'' to their definition declaration,
+They would do so by appending ``anywhere in the application'' to their definition declaration, like so:
 
-% Such a policy would look like the following:
-% \begin{figure}[h]
-% \begin{lstlisting}[language=CNL]
-% Scope: Somewhere
+\begin{figure}[h]
+\begin{lstlisting}[language=CNL]
+Scope: Somewhere
 
-% Definitions:
-% "stored sensitive" is each "sensitive" type marked @@sensitive@@ where, 
-% anywhere in the application:
-%     There is "database store" marked @@store@@ where:
-%       "sensitive" goes to "database store"
+Definitions:
+"stored sensitive" is each "sensitive" type marked @@sensitive@@ where, 
+anywhere in the application:
+    There is "database store" marked @@store@@ where:
+      "sensitive" goes to "database store"
 
-% Policy:
-% For each "stored sensitive":
-%     There is a "deleter" marked @@deletes@@ where:
-%       "stored sensitive" goes to "deleter"
-% \end{lstlisting}
-% \end{figure}
-
-\begin{figure}[t]
-    \small
-    \begin{tabular}{|p{5.5cm}|p{8cm}|}
-        \hline
-        \syslang{} Relation                                                       &  Obligation on PDG                   \\ \hline
-        \lstinline[language=CNL]|"a" goes to "b"|                                 &  There is some transitive data flow dependency from
-                                                                                    \lstinline[language=CNL]|"a"| to \lstinline[language=CNL]|"b"|. \\
-        \hline
-        \lstinline[language=CNL]|"a" affects whether "b" happens|                 & There is some transitive control flow dependency from
-                                                                                    \lstinline[language=CNL]|"a"| to \lstinline[language=CNL]|"b"|. \\
-        
-        \hline
-        \lstinline[language=CNL]|"a" goes to "b" only via "c"|                    &  On every data path from \lstinline[language=CNL]|"a"| to \lstinline[language=CNL]|"b"|,
-                                                                                    \lstinline[language=CNL]|"a"| passes through \lstinline[language=CNL]|"c"|. \\
-        \hline
-        \lstinline[language=CNL]|"a" influences "b"|                              &  There is some transitive data flow and/or control flow dependency from  \lstinline[language=CNL]|"a"| to \lstinline[language=CNL]|"b"|.  \\
-        \hline
-        \lstinline[language=CNL]|"a" is marked @@m@@|                             & \lstinline[language=CNL]|"a"| is marked \lstinline[language=CNL]|@@m@@|. \\
-        \hline
-        \lstinline[language=CNL]|"a" goes to "b"'s operation|                     & \lstinline[language=CNL]|"a"| goes to the call site associated with \lstinline[language=CNL]|"b"|,
-                                                                                    e.g., if \lstinline[language=CNL]|"b"| is an argument to a call site, then \lstinline[language=CNL]|"a"| goes to any of that call site's arguments or return. \\        
-      \hline
-    \end{tabular}
-      \caption{\syslang's relations and the obligations they enforce on \sys's marked PDG.}
-      \label{f:relations}
-  \end{figure}
+Policy:
+For each "stored sensitive":
+    There is a "deleter" marked @@deletes@@ where:
+      "stored sensitive" goes to "deleter"
+\end{lstlisting}
+\end{figure}
 
 \subsection{Body}
 \label{sec:body}
@@ -146,80 +117,105 @@ The policy body has three components: iterators, relations, and conjunctions/dis
 \paragraph{Iterators: }
 Iterators allow \ces{} to loop over a collection of nodes, reasoning about one node at a time.
 %
-\syslang{} provides two iterators: a ``For each'' loop or a ``There is'' statement.
+\syslang{} provides two iterators: a |For each| loop or a |There is| loop.
 %
 To iterate over a defined variable \lstinline[language=CNL]|"x"|, 
-a \ce{} would write \lstinline[language=CNL]|For each "x" marked @@m@@:| or \lstinline[language=CNL]|There is a "x" marked @@m@@ where:|
+a \ce{} would write \lstinline[language=CNL]|For each "x":| or \lstinline[language=CNL]|There is a "x" where:|
 %
 To introduce a new variable,
 a \ce{} would write \lstinline[language=CNL]|For each "x" marked @@m@@:| or \lstinline[language=CNL]|There is a "x" marked @@m@@ where:|
-%
-A ``For each'' loop iterates over each object in the collection and evaluates the body of the loop 
+
+A |For each| loop iterates over each object matching the condition and evaluates the body of the loop 
 in the context of the current object \lstinline[language=CNL]|"x"|.
 %
 It succeeds if the body is true for all \lstinline[language=CNL]|"x"|.
 %
-If there are no objects in the collection, the policy is vacuously true.
+If there are no \lstinline[language=CNL]|"x"|s, the body of the loop is vacuously true.
 %
-\syslang{} allows for vacuity because it evaluates policies on a per-\controller{} basis,
+\syslang{} allows for vacuity for |For each| loops because it evaluates policies on a per-\controller{} basis,
 and some \controller{}s may not have certain markers.
 %
-For example, take the Freedit policy from \S\ref{sec:overview}:
+For example, take the (abbreviated) Freedit policy from \S\ref{sec:overview}:
 \begin{lstlisting}[language=CNL]
 Scope: Everywhere
 
 Policy:
 For each "view" marked @@views@@:
   For each "database store" marked @@store@@:
-    If "view" goes to "database store" then:
-      There is a "date" marked @@time@@ where:
-        "date" goes to "database store"
+    [...]
 \end{lstlisting}
 
 Since the policy's scope is ``Everywhere'', it will be evaluated against every \controller{},
 regardless of whether it handles view data.
 %
 It would be confusing for a \dev{} if their application failed the policy on a \controller{} 
-that does not even contain the \lstinline[language=CNL]|@@views@@|.
+that does not even contain \lstinline[language=CNL]|@@views@@|.
 %
-The \ce{} could avoid this problem by changing their scope to list every \controller{} to which they expect the policy to apply,
+The \ce{} could check for vacuity by changing their scope to list only \controller{}s which they expect to handle 
+\lstinline[language=CNL]|@@views@@| and \lstinline[language=CNL]|@@stores@@|,
 but that would defeat \syslang's goal of being independent from source code.
 %
-If the \ce{} wants to insert such a vacuity check, they can leverage the ``There is'' iterator, like so:
-\begin{lstlisting}[language=CNL]
-  Scope: Everywhere
-  
-  Policy:
-  There is a "view" marked @@views@@ where:
-    There is a "database store" marked @@store@@ where:
-      "view" goes to "database store"
-  and
-  For each "view" marked @@views@@:
-    For each "database store" marked @@store@@:
-      If "view" goes to "database store" then:
-        There is a "date" marked @@time@@ where:
-          "date" goes to "database store"
-\end{lstlisting}
+A better way of checking for vacuity is to leverage the |There is| iterator, like so:
+\begin{figure}
+  \begin{lstlisting}[language=CNL]
+    Scope: Everywhere
+    
+    Policy:
+    There is a "view" marked @@views@@ where:
+      There is a "database store" marked @@store@@ where:
+        "view" goes to "database store"
+    and
+    For each "view" marked @@views@@:
+      For each "database store" marked @@store@@:
+        If "view" goes to "database store" then:
+          There is a "date" marked @@time@@ where:
+            "date" goes to "database store"
+  \end{lstlisting}
+  \label{f:vacuity}
+\end{figure}
 %
-The ``There is'' iterator succeeds if the body is true for at least one \lstinline[language=CNL]|"x"|.
+The |There is| iterator succeeds if the body is true for at least one \lstinline[language=CNL]|"x"|.
 %
-If there are no objects in the collection, the policy is false.
-%
+If there are no \lstinline[language=CNL]|"x"|s, the body of the loop is false.
+
 Observe that the loop bodies reason about the iterator variables.
 %
 If instead, we eschewed iterators and wrote this policy as:
 \begin{lstlisting}[language=CNL]
-If "view" goes to a "database store" marked @@store@@:
+If a "view" marked @@views@@ goes to a "database store" marked @@store@@:
   There is a "date" marked @@time@@ where:
     "date" goes to a "database store" marked @@store@@
 \end{lstlisting}
 We would not enforce that \lstinline[language=CNL]|"view"| and \lstinline[language=CNL]|"date"| 
 go to the \emph{same} \lstinline[language=CNL]|"database store"|.
 %
-This policy, however, would pass as long as the date is stored anywhere else in the application,
-even if it is in a context completely unrelated to views.
-%
-Iterators enable for the correct version of the policy by allowing \ces{} to refer to the same object multiple times.
+Iterators allow for the correct version of the policy by allowing \ces{} to refer to the same object multiple times.
+
+\begin{figure}
+  \small
+  \begin{tabular}{|p{5.5cm}|p{8cm}|}
+      \hline
+      \syslang{} Relation                                                       &  Obligation on PDG                   \\ \hline
+      \lstinline[language=CNL]|"a" influences "b"|                              & \lstinline[language=CNL]|"a"| has transitive influence on \lstinline[language=CNL]|"b"|. \\
+      \hline
+      \lstinline[language=CNL]|"a" goes to "b"|                                 &  \lstinline[language=CNL]|"a"| has transitive data flow influence on \lstinline[language=CNL]|"b"|. \\
+      \hline
+      \lstinline[language=CNL]|"a" affects whether "b" happens|                 & \lstinline[language=CNL]|"a"| has transitive control flow influence on \lstinline[language=CNL]|"b"|. \\
+      
+      \hline
+      \lstinline[language=CNL]|"a" goes to "b" only via "c"|                    & On every path from \lstinline[language=CNL]|"a"| to \lstinline[language=CNL]|"b"|,
+                                                                                  \lstinline[language=CNL]|"a"| passes through \lstinline[language=CNL]|"c"|. \\
+      \hline
+      \lstinline[language=CNL]|"a" goes to "b"'s operation|                     & \lstinline[language=CNL]|"a"| goes to the call site associated with \lstinline[language=CNL]|"b"|
+                                                                                 (e.g., if \lstinline[language=CNL]|"b"| is an argument to a call site, then \lstinline[language=CNL]|"a"| goes to any of that call site's arguments). \\
+      \hline 
+      \lstinline[language=CNL]|"a" is marked @@m@@|                             & \lstinline[language=CNL]|"a"| is marked \lstinline[language=CNL]|@@m@@|. \\
+             
+    \hline
+  \end{tabular}
+    \caption{\syslang's relations and the obligations they enforce on \sys's marked PDG.}
+    \label{f:relations}
+\end{figure}
 
 \paragraph{Relations: }
 %
@@ -228,37 +224,36 @@ Relations are between two objects: either two variables and a variable and a mar
 The full list of available relations are in Figure~\ref{f:relations}.
 %
 \syslang{} also supports the negation of each of these relations, e.g. \lstinline[language=CNL]|"a" does not go to "b"|.
-%
-\Ces{} use |and| or |or| operators to join iterators or relations together.
 
-\Ces{} also need to indicate the scope of each iterator.
-%
+\paragraph{Bullets: } 
+
 In our examples thus far, we have used indentation to nest iterators.
 %
-However, such a design is error-prone--one accidental indentation, and a \ce{} compiles an entirely different policy than what they intended.
+However, such a design is error-prone--with just one accidental indentation, 
+a \ce{} would write an entirely different policy than what they intended.
 %
 For instance, take the policies in Figure~\ref{f:indentation}, which differ only in indentation but have different meanings.
 %
-Version (1) will only enforce that the sensitive value is encrypted if it is stored.
+If there is no \lstinline[language=CNL]|"x"|, then Version 1 will fail.
 %
-Version (2) enforces that the sensitive value is encrypted regardless.
+Version 2, however, can still pass if \lstinline[language=CNL]|"y"| goes to \lstinline[language=CNL]|"z"|.
 
 \begin{figure}[t]
     \begin{subfigure}[b]{\columnwidth}
   \begin{lstlisting}[language=CNL]
-    If "sensitive" goes to "store" then:
-      "sensitive" goes to "auth check"
-      and
-      "sensitive" goes to "encrypts"
+    There is a "x" where:
+      "x" goes to "y"
+      or
+      "y" goes to "z"
   \end{lstlisting}
   \caption{Version 1 of the policy.}
   \end{subfigure}
   \begin{subfigure}[b]{\columnwidth}
   \begin{lstlisting}[language=CNL]
-    If "sensitive" goes to "store" then:
-      "sensitive" goes to "auth check"
-    and
-    "sensitive" goes to "encrypts"
+    There is a "x"
+      "x" goes to "y"
+    or
+    "y" goes to "z"
     \end{lstlisting}
     \caption{Version 2 of the policy.}
     \end{subfigure}
@@ -269,19 +264,19 @@ Version (2) enforces that the sensitive value is encrypted regardless.
 \begin{figure}[t]
     \begin{subfigure}[b]{\columnwidth}
   \begin{lstlisting}[language=CNL]
-    1. If "sensitive" goes to "store" then:
-      A. "sensitive" goes to "auth check"
-      and
-      B. "sensitive" goes to "encrypts"
+    1. There is a "x" where:
+      A. "x" goes to "y"
+      or
+      B. "y" goes to "z"
   \end{lstlisting}
   \caption{Version 1 of the policy.}
   \end{subfigure}
   \begin{subfigure}[b]{\columnwidth}
   \begin{lstlisting}[language=CNL]
-    1. If "sensitive" goes to "store" then:
-      A. "sensitive" goes to "auth check"
-    and
-    2. "sensitive" goes to "encrypts"
+    1. There is a "x" where:
+      A. "x" goes to "y"
+    or
+    2. "y" goes to "z"
     \end{lstlisting}
     \caption{Version 2 of the policy.}
     \end{subfigure}
@@ -292,23 +287,23 @@ Version (2) enforces that the sensitive value is encrypted regardless.
 Rather than allow a stray indent to change the meaning of the policy,
 \syslang{} instead enforces that \ces{} explicitly specify the scope of each statement.
 %
-They do so using \emph{bullets}.
+They do so with \emph{bullets}.
 %
 Figure~\ref{f:bullets} shows the policies from Figure~\ref{f:indentation} with \syslang{} bullets.
+%
+A bullet is followed by an iterator or a relation.
+%
+To introduce an additional bullet at the same level, \Ces{} use |and| or |or| operators.
 %
 \Ces{} are not permitted to mix operators (|and|s and |or|s) on the same bullet level,
 since the operator precedence in such cases would be ambiguous.
 
-\paragraph{Source Code Entities: }
-\carolyn{This is oddly placed, but I can't think of a better location for it 
-at the moment and it's necessary background for the precision eval. Feels too long to put in the eval itself.}
+\subsection{Types}
 \syslang{} intentionally abstracts away details of the PDG to make policies easier to write.
-
+%
 Namely, \syslang{} does not support reasoning about particular source code entities (e.g., arguments, functions).
 %
 The one exception is types.
-%
-% Unlike arguments and return values, marked types do not belong to a particular controller. 
 %
 A typical data deletion policy will take the following form:
 \begin{lstlisting}[language=CNL]
@@ -317,24 +312,15 @@ A typical data deletion policy will take the following form:
     a. There is a "deleter" marked @@deletes@@ where:
         i) "source" goes to "deleter"
 \end{lstlisting}
-The policy needs to iterate over each marked type,
-\emph{then} ensure that some node in the PDG is both \emph{(i)} of that type
-and \emph{(ii)} has that marker.
+%
+This policy enforces that for each user data type, some data of that type is deleted.
 %
 Consider how a \ce{} would write this policy without the |type| keyword.
 %
-They could write just that \lstinline[language=CNL]|There is a "source" marked @@user_data@@|,
-but that does not ensure that \emph{all} @@user_data@ types are deleted.
+They could write that \lstinline[language=CNL]|There is a "source" marked @@user_data@@| that is deleted,
+but only checks that at least one \lstinline[language=CNL]|@@user_data@@| type is deleted, not that all of them are.
 %
 They could approximate the |type| keyword by giving each type a unique marker and using \lstinline[language=CNL]|There is|
 iterators for each of them, but such a policy would be tedious to write and easy to get wrong.
-%
-For other kinds of marked source code entities (arguments and return values),
-there is no compelling need to iterate over each variant of them.
-%
-It is harder to imagine, for example, a policy that would need to distinguish between 
-a |u32| and a |String| marked \lstinline[language=CNL]|@@sensitive@@|.
-%
-\syslang{} therefore does not support reasoning about arguments or return values directly.
 
 \syslang{}'s full grammar is in \Cref{sec:grammar}.

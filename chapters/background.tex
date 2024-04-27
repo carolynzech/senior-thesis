@@ -1,15 +1,17 @@
 \chapter{Background}
 
-\syslang{} expresses policies over \sys{}'s PDGs.
+\syslang{} expresses policies over \sys{}'s PDG.
 %
 First, we provide some background on PDGs in general, then on \sys{}'s design.
 
 \section{PDGs}
-A program dependence graph (PDG) represents a program's \emph{dependencies}~\cite{ferranteProgramDependenceGraph1987}.
+A program dependence graph (PDG)~\cite{ferranteProgramDependenceGraph1987} represents a program's \emph{dependencies}.
 %
-The nodes are, loosely speaking, any variables in the program, including its arguments and return value.
+The nodes are, generally speaking, any variables in the program, including its arguments and function return values.
 %
-If the PDG contains an edge $x \xrightarrow y$, that indicates that $y$ depends on $x$.
+The edges represent dependencies between nodes.
+%
+If the PDG contains an edge $x \xrightarrow{} y$, that indicates that $y$ depends on $x$.
 %
 There are two kinds of dependencies: data dependencies and control dependencies.
 %
@@ -18,60 +20,66 @@ A data dependency $x \xrightarrow{\mathsf{data}} y$ indicates that $x$ directly 
 A control dependency $x \xrightarrow{\mathsf{control}} y$ indicates that $x$ indirectly affects $y$, 
 e.g., \lstinline[language=Rust]|if (x == 1) y = 1 else y = 2|.
 %
-We say that $x$ has a \emph{transitive} dependency on $y$ if there exists some path from $x$ to $y$ through the PDG,
+We say that $x$ has \emph{transitive} influence on $y$ if there exists some path from $x$ to $y$ through the PDG,
 either through a direct edge from $x$ to $y$ or through intermediate nodes 
 (e.g., $x \xrightarrow{\mathsf{data}} z \xrightarrow{\mathsf{control}} y$).
 %
-$x$ and $y$ have a transitive data dependency if there is a path from $x$ to $y$ comprised entirely of data edges.
+$x$ has transitive \emph{data} influence on $y$ if there is a path from $x$ to $y$ comprised entirely of data edges.
 %
-They have a transitive control dependency if there is a path from $x$ to $y$ comprised entirely of control edges.
+$x$ has transitive \emph{control} influence on $y$ if there is a path from $x$ to $y$ comprised entirely of control edges.
 
 \section{\sys{}}
 
 \sys{} generates PDGs for Rust applications.
 %
 Users express their polices as assertions over their application's PDG, 
-e.g., $x$ must have a transitive data dependency on $y$.
+e.g., $x$ must have transitive data influence on $y$.
 %
-\sys{} provides an API for common query patterns.
+\sys{} provides a Rust API for common query patterns.
 %
-For instance, \writers{} use the \lstinline[language=Rust]|flows_to(x, y, EdgeSelection)| primitive to query for transitive dependencies, 
-providing |EdgeSelection::Both|, |EdgeSelection::Data|, or |EdgeSelection::Control| for a transitive dependency,
-a transitive data dependency, or a control transitive control dependency, respectively.
+For instance, \writers{} use the \lstinline[language=Rust]|flows_to(x, y, EdgeSelection)| primitive to query for transitive influence, 
+providing |EdgeSelection::Both|, |EdgeSelection::Data|, or |EdgeSelection::Control| for transitive influence,
+transitive data influence, or transitive control influence, respectively.
 
-\sys{} provides a \emph{markers} abstraction for \writers{} to annotate PDG nodes with custom labels.
+If a \ce{} wanted to identify all nodes in the PDG corresponding to some privacy-critical operation
+(e.g., data sinks), they could manually inspect it, but that would be tedious and error-prone.
 %
-For instance, if a \dev{} wanted to identify all nodes in the PDG corresponding to data sinks,
-they could manually inspect it, but such a process would be tedious and error-prone.
+Instead, they use \sys's \emph{markers} abstraction to annotate their source code with custom labels.
 %
-Instead, they can insert an inline annotation into their source code, 
-e.g.:
+When \sys{} constructs the application's PDG, it attaches markers to the appropriate nodes.
+%
+\Devs{} apply markers to source code through inline annotations, e.g.:
 \begin{lstlisting}[language=Rust]
     #[paralegal::marker(sink, argument = recipient)]
     fn send_email(recipient, sender, content) {... }
 \end{lstlisting}
-which applies a marker |sink| to the |recipient| argument of the |send_email| function.
+which applies a marker \lstinline[language=CNL]|@@sink@@| to the |recipient| argument of the |send_email| function.
 %
-The PDG will contain one |recipient| node for each invocation of |send_email| and apply |sink| to each of them.
+The PDG will contain one |recipient| node for each invocation of |send_email|, with \lstinline[language=CNL]|@@sink@@| applied to each of them.
 
-\Writers{} leverage \sys{}'s markers abstraction to write their \policies{}.
+\Writers{} use \sys{}'s markers abstraction to write their \policies{}.
 %
 In this example, rather than explicitly enumerate the dependencies for each |recipient| node,
-the \writer{} can instead specify that all nodes marked |sink| have some dependency.
+the \writer{} can instead specify that all nodes marked \lstinline[language=CNL]|@@sink@@| have some dependency.
 %
-Markers make policies clearer because they allow \writers{} to reason about concepts like |sink| or |user data|,
+Markers make policies clearer because they allow \writers{} to reason about concepts like 
+\lstinline[language=CNL]|@@sink@@| or \lstinline[language=CNL]|@@user data@@|,
 rather than source-code level entities like function arguments.
 %
 The \sys{} Graph Query API provides a primitive to fetch all nodes marked |m|, 
 which \devs{} can then provide to queries like \lstinline[language=Rust]|flows_to|.
 
-After writing their policies and applying their markers to source code,
-the \dev{} also marks certain functions as \emph{entrypoints} for \sys{}'s analysis.
+After writing a policy and applying its markers to source code,
+the \dev{} leverages their application knowledge to mark certain functions 
+as \emph{entrypoints} for \sys{}'s analysis.
 %
 \sys{} constructs PDGs for each \controller{}.
 %
-For instance, for a web application, a \dev{} would mark any user-facing endpoints as \controller{}s.
+\Controller{}s are, generally speaking, the ``privacy relevant'' functions in the application.
+%
+In a web application, for example, they are the user-facing endpoints where data enters and exits the application.
 %
 The \dev{} then runs \sys{} against their application, which generates the application's \emph{marked PDGs},
 i.e., its PDGs with its markers applied to the appropriate graph nodes.
 %
+\sys{} checks the policy against the marked PDG and outputs whether the application is compliant.

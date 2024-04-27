@@ -90,7 +90,7 @@ except for application-specific markers.
 
 \section{Precision}
 \label{sec:precision}
-\syslang{} policies do not support the same degree of precision as native Rust polices~\Cref{sec:interface, sec:limitations}.
+\syslang{} policies do not support the same degree of precision as native Rust polices~\Cref{sec:interface,sec:limitations}.
 %
 We evaluate to what extent this loss of precision affects the accuracy of \syslang{} policies.
 %
@@ -176,6 +176,7 @@ Figure~\ref{f:percentages} gives the percentage difference in run time for each 
         WebSubmit    & 29.89     & 30.07     & -0.18   & -0.6  \\ \hline               
         \end{tabular}
         \caption{Comparison of \syslang{} and Graph Query API policy execution times.}
+        \label{f:percentages}
 \end{figure}
 %
 These results demonstrate that \syslang{} policies incur an acceptable overhead compared to native Rust policies.

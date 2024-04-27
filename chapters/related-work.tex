@@ -14,14 +14,14 @@ Ponder ~\cite{ponder} also encodes policies through code; developers specify ass
 Other interfaces, such as IFC ~\cite{jif} or regular expression-based rules ~\cite{hotnets}, 
 allow for precise reasoning over graphs without writing code, but still require a strong technical background.
 
-Legalese ~~\cite{legalese} is a \policylang{} that, like \syslang, is structured around allowing or disallowing information flows over a data dependency graph.
+Legalese ~\cite{legalese} is a \policylang{} that, like \syslang, is structured around allowing or disallowing information flows over a data dependency graph.
 %
 Legalese can only express whether one node does or does not flow to another--it cannot express control flow or the order of nodes in a dataflow path.
 %
 % It also applies policies to every path in the graph, while \syslang{} supports policy scope.
 %
-While Legalese's \todo{prose-based structure} attempts to make it more accessible than program-based specifications, 
-user surveys have found that non-programmers struggle to define or interpret Legalese policies ~\cite{legalese, privguard}. \todo{could be good to say why}
+While Legalese's prose-based structure attempts to make it more accessible than program-based specifications, 
+user surveys have found that non-programmers struggle to define or interpret Legalese policies ~\cite{legalese, privguard}.
 
 Riverbed ~\cite{riverbed}, RuleKeeper ~\cite{rulekeeper}, and Logical English ~\cite{logical-english} offer more accessible policy specifications.
 %
@@ -30,4 +30,4 @@ However, they are very limited to particular domains--Riverbed encodes four bina
 Unlike \syslang, which is not dependent on a particular programming language as a compilation target, Logical English is merely syntactic sugar for Prolog.
 
 \syslang{} is a \policylang{} that leverages \sys{}'s marked PDG abstraction to maintain acceptable precision compared to most program-based policies,
-while still providing an intuitive and expressive \todo{interface}.
+while still providing an intuitive and expressive interface.

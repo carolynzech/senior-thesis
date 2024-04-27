@@ -138,12 +138,12 @@ They would do so by appending ``anywhere in the application'' to their definitio
       \label{f:relations}
   \end{figure}
 
-\subsubsection{Body}
+\subsection{Body}
 \label{sec:body}
 
 The policy body has three components: iterators, relations, and conjunctions/disjunctions of them.
 %
-\paragraph{Iterators}
+\paragraph{Iterators: }
 Iterators allow \ces{} to loop over a collection of nodes, reasoning about one node at a time.
 %
 \syslang{} provides two iterators: a ``For each'' loop or a ``There is'' statement.
@@ -221,7 +221,7 @@ even if it is in a context completely unrelated to views.
 %
 Iterators enable for the correct version of the policy by allowing \ces{} to refer to the same object multiple times.
 
-\paragraph{Relations}
+\paragraph{Relations: }
 %
 Relations are between two objects: either two variables and a variable and a marker.
 %
@@ -298,5 +298,43 @@ Figure~\ref{f:bullets} shows the policies from Figure~\ref{f:indentation} with \
 %
 \Ces{} are not permitted to mix operators (|and|s and |or|s) on the same bullet level,
 since the operator precedence in such cases would be ambiguous.
+
+\paragraph{Source Code Entities: }
+\carolyn{This is oddly placed, but I can't think of a better location for it 
+at the moment and it's necessary background for the precision eval. Feels too long to put in the eval itself.}
+\syslang{} intentionally abstracts away details of the PDG to make policies easier to write.
+
+Namely, \syslang{} does not support reasoning about particular source code entities (e.g., arguments, functions).
+%
+The one exception is types.
+%
+% Unlike arguments and return values, marked types do not belong to a particular controller. 
+%
+A typical data deletion policy will take the following form:
+\begin{lstlisting}[language=CNL]
+1. For each "sensitive" type marked @@user_data@@:
+  A. There is a "source" that produces "sensitive" where:
+    a. There is a "deleter" marked @@deletes@@ where:
+        i) "source" goes to "deleter"
+\end{lstlisting}
+The policy needs to iterate over each marked type,
+\emph{then} ensure that some node in the PDG is both \emph{(i)} of that type
+and \emph{(ii)} has that marker.
+%
+Consider how a \ce{} would write this policy without the |type| keyword.
+%
+They could write just that \lstinline[language=CNL]|There is a "source" marked @@user_data@@|,
+but that does not ensure that \emph{all} @@user_data@ types are deleted.
+%
+They could approximate the |type| keyword by giving each type a unique marker and using \lstinline[language=CNL]|There is|
+iterators for each of them, but such a policy would be tedious to write and easy to get wrong.
+%
+For other kinds of marked source code entities (arguments and return values),
+there is no compelling need to iterate over each variant of them.
+%
+It is harder to imagine, for example, a policy that would need to distinguish between 
+a |u32| and a |String| marked \lstinline[language=CNL]|@@sensitive@@|.
+%
+\syslang{} therefore does not support reasoning about arguments or return values directly.
 
 \syslang{}'s full grammar is in \Cref{sec:grammar}.

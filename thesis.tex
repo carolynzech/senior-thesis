@@ -5,7 +5,6 @@
 \usepackage[utf8x]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
-
 \usepackage{graphicx}
 \usepackage{color}
 \usepackage{csquotes}
@@ -40,6 +39,11 @@
   maxbibnames=99]{biblatex}
 
 \addbibresource{main.bib}
+
+\titleformat{\chapter}[display]
+  {\normalfont\large\bfseries}{}{0pt}{\LARGE}
+\titlespacing*{\chapter}
+  {0pt}{10pt}{20pt}
 
 \frenchspacing
 \linespread{1.2}

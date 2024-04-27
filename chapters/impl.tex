@@ -2,10 +2,12 @@
 \label{sec:limitations}
 We implement the \syslang{} compiler in 2370 lines of Rust.
 
-\section{Direct Dependencies}
-\syslang{} intentionally abstracts away details of the PDG to make policies easier to write.
+\syslang{} has some limitations which could be overcome with further engineering effort.
 %
-For example, its relations reason about \emph{transitive} dependencies between PDG nodes.
+We detail those below.
+
+\section{Direct Dependencies}
+\syslang{} relations reason about \emph{transitive} dependencies between PDG nodes.
 %
 There is no way for \ces{} to enforce a \emph{direct} edge between two nodes (i.e., no intermediate data or control flow).
 %
@@ -22,33 +24,6 @@ to secret data before it reaches some |sink| (perhaps in a security-critical set
 %
 \syslang{} could not express this policy, while \sys{}'s Graph Query API can.
 
-\section{Related Nodes}
-Similarly, \syslang{} cannot reason about the direct children, siblings, or antecedents of a given node.
-%
-For example, take the function |send_email(recipient, sender, content)|.
-%
-A \ce{} may want to express the idea that if data marked \lstinline[language=CNL]|@@sensitive@@| flows to |content|,
-then data marked \lstinline[language=CNL]|@@admin@@| flows to |recipient|.
-%
-However, if the \ce{} simply checked that data marked \lstinline[language=CNL]|@@admin@@| flows to \emph{some} |recipient|,
-then code like this would pass the policy:
-\begin{lstlisting}[language=Rust]
-    send_email(admin@cs.brown.edu, student@cs.brown.edu, benign_data);
-    send_email(otherstudent@cs.brown.edu, student@cs.brown.edu, sensitive_data)
-\end{lstlisting}
-The second |send_email| call is unsafe because sensitive data is sent to a student, not an administrator.
-%
-However, because the first, unrelated |send_email| recipient is an administrator, \sys{} would see that some recipient is an admin and the policy would pass.
-%
-To prevent this bug, a \ce{} could make their policy more precise, and instead say that if if data marked \lstinline[language=CNL]|@@sensitive@@| flows to |content|,
-then data marked \lstinline[language=CNL]|@@admin@@| flows to |recipient| \emph{at the same call site}.
-%
-\syslang{} cannot express this policy exactly.
-%
-Its ``goes to ... operation'' relation can check that data marked \lstinline[language=CNL]|@@admin@@| flows to the same call site, but it cannot differentiate between arguments of the call site as the policy requires.
-%
-\sys{}'s Graph Query API can express the policy.
-
 \section{Code Optimization}
 The \syslang{} compiler does not optimize its outputted code, so it misses opportunities for efficiency improvements.
 %
@@ -56,5 +31,3 @@ For example, if a policy contains two iterators over the same data, the \syslang
 when it could have just done one traversal and stored the result for the subsequent iteration.
 %
 Our \syslang{} prototype supports five levels of bullets, although more could be supported with additional engineering effort.
-
-% iterators w arbitrary conditions

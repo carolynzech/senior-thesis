@@ -9,7 +9,7 @@ We detail those below.
 \section{Direct Dependencies}
 \syslang{} relations reason about \emph{transitive} dependencies between PDG nodes.
 %
-There is no way for \ces{} to enforce a \emph{direct} edge between two nodes (i.e., no intermediate data or control flow).
+There is no way for \ces{} to enforce a \emph{direct} edge between two nodes.
 %
 In most cases, transitive dependencies are the correct level of abstraction.
 %
@@ -17,17 +17,32 @@ For example, given the code \lstinline[language=Rust]|sink(*sensitive)|,
 one would reasonably conclude that |sensitive| goes to |sink|.
 %
 However, since |sensitive| is dereferenced, the PDG would contain an intermediate node between |sensitive| and |sink|,
-so there is no direct data flow edge between |sensitive| and |sink|.\carolyn{verify w justus}
+so there is no direct data flow edge between |sensitive| and |sink|.
+\carolyn{Double check with Justus that this dereference example works; otherwise, introduce a toy example where sensitive flows to an intermediate variable,
+which then flows to sink.}
 %
 However, it is possible that a \dev{} would want to forbid any intermediate data transformations
-to secret data before it reaches some |sink| (perhaps in a security-critical setting).
+to sensitive data before it reaches some |sink| (perhaps in a security-critical setting).
 %
 \syslang{} could not express this policy, while \sys{}'s Graph Query API can.
 
-\section{Code Optimization}
+\section{Code Improvements}
 The \syslang{} compiler does not optimize its outputted code, so it misses opportunities for efficiency improvements.
 %
-For example, if a policy contains two iterators over the same data, the \syslang{} compiled policy will traverse the PDG twice to gather the relevant nodes,
+For example, if a policy contains two iterators over the same data, the \syslang{} compiled policy will traverse the PDG twice,
 when it could have just done one traversal and stored the result for the subsequent iteration.
+
+The Graph Query API also has a sophisticated error messages framework,
+which allows \devs{} to print which source code locations are causing policy failure.
 %
-Our \syslang{} prototype supports five levels of bullets, although more could be supported with additional engineering effort.
+\syslang{}'s policies currently only print whether the policy was successful,
+but the compiler's templates could be revised to support this error message framework.
+%
+
+\section{Other Limitations}
+Our \syslang{} prototype supports five levels of bullets, but more could be added with additional engineering effort.
+%
+It also only supports iterating over defined variables and variables marked \lstinline[language=CNL]|@@m@@|.
+%
+If \syslang{} allowed filtering on relations, e.g. \lstinline[language=CNL]|For each "x" that goes to "y"|,
+its policies would be more concise.

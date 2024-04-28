@@ -6,7 +6,7 @@ at risk for financial liability.
 %
 In May of 2023 alone, Ireland fined Meta €1.2 billion for GDPR violations, 
 while the United States fined Amazon \$25 million for failing to honor data deletion requests 
-under the Children’s Online Privacy Protection Act\cite{meta-fine,amazon-fine}.
+under the Children’s Online Privacy Protection Act~\cite{meta-fine,amazon-fine}.
 %
 To ensure compliance, organizations must relate dense legal text to their low-level application source code.
 %
@@ -59,7 +59,7 @@ First, it must be accessible yet unambiguous.
 %
 Such a design would tie the policy to the application's implementation, effectively restricting policy writing to the application's \devs.
 %
-It would also make the policies more difficult to write, brittle to source code changes, and less portable across applications.
+It would also make the policies more difficult to write and brittle to source code changes.
 %
 \syslang{} should instead be accessible to a broader range of technical stakeholders.
 %
@@ -123,7 +123,7 @@ This goal is necessary so that \sys{} remains practical for CI use.
 We evaluate \syslang{} against seven third-party Rust applications.
 %
 We find that \syslang{} can express a wide range of \policies{} for these applications,
-that these policies are accessible and portable across applications,
+that these policies correctly identify bugs,
 and that they incur acceptable run time overhead compared to optimized Rust graph queries.
 %
 

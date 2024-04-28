@@ -20,14 +20,10 @@ Legalese can only express whether one node does or does not flow to another--it 
 %
 % It also applies policies to every path in the graph, while \syslang{} supports policy scope.
 %
-While Legalese's prose-based structure attempts to make it more accessible than program-based specifications, 
+While Legalese is meant to be more accessible than program-based specifications, 
 user surveys have found that non-programmers struggle to define or interpret Legalese policies ~\cite{legalese, privguard}.
 
-Riverbed ~\cite{riverbed}, RuleKeeper ~\cite{rulekeeper}, and Logical English ~\cite{logical-english} offer more accessible policy specifications.
+Riverbed~\cite{riverbed} and RuleKeeper~\cite{rulekeeper} offer more accessible policy specifications.
 %
 However, they are very limited to particular domains--Riverbed encodes four binary allow/disallow attributes, while RuleKeeper supports a subset of GDPR provisions.
 %
-Unlike \syslang, which is not dependent on a particular programming language as a compilation target, Logical English is merely syntactic sugar for Prolog.
-
-\syslang{} is a \policylang{} that leverages \sys{}'s marked PDG abstraction to maintain acceptable precision compared to most program-based policies,
-while still providing an intuitive and expressive interface.

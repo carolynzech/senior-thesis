@@ -155,7 +155,6 @@ i.e., a \dev{} would catch the same bugs (and have the same false positives and 
 %
 This result is a promising indicator that \syslang's worse precision is acceptable in practice.
 
-
 \section{Efficiency}
 \label{sec:efficiency}
 For each application, we compare the total execution time of its Graph Query API policies
@@ -165,7 +164,7 @@ To avoid the variance of a single run unduly affecting the result, we average th
 %
 We would expect \syslang{} policies to be slower on average because of its compiler limitations (\S\ref{sec:code-limits}).
 
-Figures~\ref{f:times,f:percentages} compare the \syslang{} and Graph Query API policy execution times.
+~\Cref{f:times,f:percentages} compare the \syslang{} and Graph Query API policy execution times.
 %
 We found that \syslang{} policies are 2-12\% slower than their Graph Query API counterparts.
 %
@@ -173,6 +172,9 @@ The one exception is WebSubmit, which was 0.5\% faster than the Rust API policie
 %
 However, the WebSubmit policies run quickly (~30ms),
 so in any given run, a difference of a few milliseconds causes this percentage to vary widely.
+
+These results demonstrate that \syslang{} policies incur an acceptable overhead compared to native Rust policies.
+
 \begin{figure}
     \begin{centering}
         \includegraphics[scale=0.7]{graphics/times.pdf}
@@ -196,5 +198,3 @@ so in any given run, a difference of a few milliseconds causes this percentage t
         \caption{Comparison of \syslang{} and Graph Query API policy execution times.}
         \label{f:percentages}
 \end{figure}
-%
-These results demonstrate that \syslang{} policies incur an acceptable overhead compared to native Rust policies.

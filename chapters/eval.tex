@@ -180,7 +180,7 @@ For example, take the AtomicServer application, a graph-based database.
 % % Before applying the commit, the application must verify that the user is permitted to modify the resource.
 % %
 A previous version of the application failed to verify that the 
-user was permitted to modify a database resource before applying the change.
+user was permitted to modify a database resource before applying the update.
 %
 % A (simplified) version of the fixed source code is below.
 % %
@@ -208,9 +208,13 @@ user was permitted to modify a database resource before applying the change.
 % Instead, I reasoned that if the database resource was what was modified,
 % then there is no reason to care about the particular commit record of the changes that get stored alongside that resource.
 %
-We encode this policy in \syslang{} by checking that if a \lstinline[language=CNL]|"database resource" goes to "update"|,
-\lstinline[language=CNL]|"database resource" goes to "auth check"| and 
-\lstinline[language=CNL]|"auth check" affects whether "update" happens|.
+% We encode this policy in \syslang{} by checking that if a \lstinline[language=CNL]|"database resource" goes to "update"|,
+% \lstinline[language=CNL]|"database resource" goes to "auth check"| and 
+% \lstinline[language=CNL]|"auth check" affects whether "update" happens|.
+%
+We encode this policy in \syslang{} by enforcing that if a database resource is modified,
+the application checks which users are permitted to modify the resource,
+and that check affects whether the update happens.
 %
 This policy fails on the buggy version of the application and passes on the fixed version.
 
@@ -224,21 +228,28 @@ Our Graph Query API policy enforced that a commit had transitive data influence 
 %
 This assertion is not necessary to catch this particular permission check bug, 
 but it would catch a bug where the application updated the wrong resource (i.e., one unaffiliated with a commit).
+%
 
-To write this stricter policy in \syslang{}, \ces{} and \devs{} must expend more effort.
+Throughout this work, we found multiple other instances where our \syslang{}
+policies were simpler than the Graph API policies we wrote earlier.
 %
-The \ce{} would need more advanced implementation knowledge: 
-they would need to understand the notion of commits and how they interact with resources.
+Since the Graph Query API allows \devs{} access to the full expressive power of the PDG,
+we often found ourselves referencing application source code to ensure that we selected the right primitives.
 %
-They may need to consult with the \dev{} to update the policy,
-and the \dev{} would need to apply (and maintain) more markers.
+As a result, we unwittingly wrote policies that were more closely tied to the 
+source code than actually necessary to express the policy we sought to check.
+%
+When we wrote the \syslang{} policies, 
+we had a much smaller subset of relations available.
+%
+We found that by abstracting away the full power of the PDG representation,
+\syslang{} encouraged us to think about the minimum set of concepts
+necessary to express our policies,
+so our policies did not contain these unnecessary checks.
 
-By abstracting away details of the source code,
-\syslang{} encourages the \ce{} to think about the minimum set of concepts
-necessary to express their policy.
-%
-While this approach can simplify policies,
-it may cause the \ce{} to miss opportunities to strengthen their policies with implementation-specific assertions.
+However, there may be cases where a \ce{} wants to write the stricter version of this policy.
+% While this approach can simplify policies and reduce the effort required to write them,
+% it may cause the \ce{} to miss opportunities to strengthen their policies with implementation-specific assertions.
 %
 % Graph Query API policies are less likely to suffer this problem because they require
 % more advanced knowledge of programming and the application's PDG,
@@ -248,7 +259,11 @@ it may cause the \ce{} to miss opportunities to strengthen their policies with i
 % In these cases, we count on the developer to assess the policy they receive from the \ce{}
 % and make suggestions for improvements as they see fit.
 % %
-To write stricter policies in \syslang, the \ce{} likely needs to consult with the developer.
+To do so, they must expend more effort to understand 
+the implementation-specific notion of commits and how they interact with resources.
+%
+They may need to consult with the \dev{} to update the policy,
+and the \dev{} would need to apply (and maintain) more markers.
 
 \paragraph{Bullets:} We found that for some of the policies, 
 our first attempt to express them required more levels of bullets than \sys{} supports~(\Cref{sec:other-limits}).

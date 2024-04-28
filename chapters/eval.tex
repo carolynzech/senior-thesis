@@ -150,8 +150,8 @@ We evaluate to what extent this loss of precision affects the accuracy of \sysla
 We ran both the Graph Query API policies and the \syslang{} policies on compliant versions of the applications and 
 versions with injected bugs.
 %
-We found that the policies produced identical results, 
-i.e., a \dev{} would catch the same bugs (and have the same false positives and negatives) with either version.
+We found that both sets of policies were correct for every application,
+i.e., passed for the compliant versions and failed for the incompliant ones.
 %
 This result is a promising indicator that \syslang's worse precision is acceptable in practice.
 

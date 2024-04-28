@@ -168,7 +168,7 @@ We evaluate the effort required to encode policies in \syslang{}.
 %
 Ideally, we would have conducted a user study with users unfamiliar with the system.
 %
-However, due to time limitations, we instead summarize our experience (as the authors of \syslang{}) writing policies.
+However, due to time limitations, we instead summarize our experience (as the authors of \sys{}) writing policies.
 %
 
 \paragraph{Policy Strictness:} We find that the effort required to encode policies in \syslang{} is proportional to the strictness of the policy.
@@ -226,8 +226,7 @@ Commits are records of modifications to a resource (analogous to Git commits).
 %
 Our Graph Query API policy enforced that a commit had transitive data influence on the modified resource.
 %
-This assertion is not necessary to catch this particular permission check bug, 
-but it would catch a bug where the application updated the wrong resource (i.e., one unaffiliated with a commit).
+This assertion is not necessary to catch the permission check bug.
 %
 
 Throughout this work, we found multiple other instances where our \syslang{}
@@ -247,7 +246,8 @@ We found that by abstracting away the full power of the PDG representation,
 necessary to express our policies,
 so our policies did not contain these unnecessary checks.
 
-However, there may be cases where a \ce{} wants to write the stricter version of this policy.
+If a \ce{} does want to check in their \syslang{} policy that the modified resource is indeed
+affiliated with a commit, they will need to expend more effort.
 % While this approach can simplify policies and reduce the effort required to write them,
 % it may cause the \ce{} to miss opportunities to strengthen their policies with implementation-specific assertions.
 %
@@ -258,12 +258,12 @@ However, there may be cases where a \ce{} wants to write the stricter version of
 %
 % In these cases, we count on the developer to assess the policy they receive from the \ce{}
 % and make suggestions for improvements as they see fit.
-% %
-To do so, they must expend more effort to understand 
+%.
+%
+They may need to consult with the \dev{} to understand 
 the implementation-specific notion of commits and how they interact with resources.
 %
-They may need to consult with the \dev{} to update the policy,
-and the \dev{} would need to apply (and maintain) more markers.
+The \dev{} would also need to apply (and maintain) more markers to the application.
 
 \paragraph{Bullets:} We found that for some of the policies, 
 our first attempt to express them required more levels of bullets than \sys{} supports~(\Cref{sec:other-limits}).

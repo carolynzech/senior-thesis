@@ -23,8 +23,8 @@ We evaluate \syslang{} against seven third-party Rust applications to answer fou
 \begin{enumerate}[nosep]
     \item What is the developer effort required to encode policies in \syslang? (\S\ref{sec:accessibility})
     \item Can \syslang's grammar express real-world \policies? (\S\ref{sec:expressivity})
-    \item Does \syslang's compiler correctly translate \policies{} to graph queries without loss of precision? (\S\ref{sec:precision})
-    \item Does \syslang's compiler produce efficient, optimized queries? (\S\ref{sec:efficiency})
+    \item How do \syslang's abstractions impact policy precision and correctness?(\S\ref{sec:precision})
+    \item Are \syslang's policies efficient enough for practical use? (\S\ref{sec:efficiency})
 \end{enumerate}
 %
 
@@ -36,8 +36,6 @@ We summarize the applications in~\Cref{f:apps}.
 \label{sec:accessibility}
 %
 We evaluate the effort required to encode policies in \syslang{}.
-%
-One of \syslang's goals is to be accessible and intuitive to \ces{} without advanced programming experience or implementation knowledge.
 %
 For each application, we had two groups write policies.
 %
@@ -61,21 +59,30 @@ The Graph Query API policies were tied closely to the source code and used more 
 They were also 2-3$\times$ longer than the \syslang{} policies, 
 which made it harder to understand what they were doing and identify bugs.
 
+We found that for some of the policies, 
+our first attempt to express them required more levels of bullets than \sys{} supports~(\Cref{sec:other-limits}).
+%
+We refactored the policies to use definitions, 
+which allowed us to express the policies with fewer nested expressions.
+%
+We found that this process made our final policies easier to read,
+even if it took us longer to write them.
+%
 
 \section{Expressivity}
 \label{sec:expressivity}
 %
-We found that \sys{} could express all of the policies of these applications.
+We found that \syslang{} could express all of the policies that we defined for these applications.
 %
 In cases where the policy was inherently dynamic, we defined static approximations.
 %
 For example, a GDPR data deletion policy would state that some \controller{} deletes \emph{all} of a user's data.
 %
 \sys{} cannot verify that the application actually deletes all of the user's data,
-since the exact contents of that data is only known at runtime.
+since the exact contents of that data are only known at runtime.
 %
-However, it can ensure that for each type marked \lstinline[language=CNL]|user_data|, 
-there is some data of that type that goes to a \lstinline[language=CNL]|deleter|.
+However, it can ensure that for each type marked \lstinline[language=CNL]|@@user_data@@|, 
+there is some data of that type that goes to a \lstinline[language=CNL]|"deleter"|.
 %
 This policy is expressive enough to find bugs where applications forget to delete a given type of user data,
 but cannot catch bugs where an application only deletes \emph{some} of the data of a given type.
@@ -88,21 +95,14 @@ Three others (Hyperswitch, Lemmy, and mCaptcha) use the same access control poli
 except for application-specific markers.
 %
 
-\section{Precision}
-\label{sec:precision}
-\syslang{} policies do not support the same degree of precision as native Rust polices~\Cref{sec:interface,sec:limitations}.
+While we were able to express all of the policies for these applications,
+we do not expect that \syslang{} could express every privacy policy.
 %
-We evaluate to what extent this loss of precision affects the accuracy of \syslang{} policies.
+For example, our \syslang{} prototype cannot express policies that rely on direct dependencies 
+or more than five levels of nested expressions~(\Cref{sec:direct-limits,sec:other-limits}).
 %
-We ran both the Graph Query API policies and the \syslang{} policies on compliant versions of the applications and 
-versions with injected bugs.
-%
-We found that the policies produced identical results, 
-i.e., a \dev{} would catch the same bugs (and have the same false positives) with either version.
-%
-
-While this result is a promising indicator that \syslang's worse precision is acceptable in practice,
-there are cases where it would miss bugs that a Graph Query API policy could catch.
+It also cannot express policies that require more fine-grained reasoning about particular source code
+entities, like arguments.
 %
 For example, take the function |send_email(recipient, sender, content)|.
 %
@@ -117,9 +117,10 @@ then code like this would pass the policy:
 \end{lstlisting}
 The second |send_email| call is unsafe because sensitive data is sent to a student, not an administrator.
 %
-However, because the first, unrelated |send_email| recipient is an administrator, \sys{} would see that some recipient is an admin and the policy would pass.
+However, because the first, unrelated |send_email| recipient is an administrator, 
+\sys{} would see that some recipient is an administrator and the policy would pass.
 %
-To prevent this bug, a \ce{} could make their policy more precise, and instead say that if data marked \lstinline[language=CNL]|@@sensitive@@| goes to |content|,
+To prevent this bug, a \ce{} could make their policy more precise: if data marked \lstinline[language=CNL]|@@sensitive@@| goes to |content|,
 then data marked \lstinline[language=CNL]|@@admin@@| goes to |recipient| \emph{in the same} |send_email| \emph{operation}.
 %
 \syslang{} cannot express this policy exactly.
@@ -130,11 +131,30 @@ but it cannot enforce that it goes to the |recipient| argument specifically.
 Thus, the \syslang{} version of the policy would allow this (buggy) code to pass:
 \begin{lstlisting}[language=Rust]
     send_email(student1@cs.brown.edu, student2@cs.brown.edu, 
-                "admin@cs.brown.edu's SSN is [...]");
+                "admin@cs.brown.edu's credit card number is [...]");
 \end{lstlisting}
 %
-\sys{}'s Graph Query API can enforce that the administrator goes to the correct argument,
+This code is incompliant because it sends sensitive data to a student,
+but \syslang{}'s policy would not catch it because \lstinline[language=CNL]|@@admin@@| goes to 
+the operation through the |content| argument.
+%
+\sys{}'s Graph Query API can enforce that the administrator goes to the |recipient| argument,
 so it is possible to write a native Rust policy that catches this bug.
+
+\section{Precision}
+\label{sec:precision}
+\syslang{} policies do not support the same degree of precision as native Rust polices~(\Cref{sec:interface,sec:direct-limits}).
+%
+We evaluate to what extent this loss of precision affects the accuracy of \syslang{} policies.
+
+We ran both the Graph Query API policies and the \syslang{} policies on compliant versions of the applications and 
+versions with injected bugs.
+%
+We found that the policies produced identical results, 
+i.e., a \dev{} would catch the same bugs (and have the same false positives and negatives) with either version.
+%
+This result is a promising indicator that \syslang's worse precision is acceptable in practice.
+
 
 \section{Efficiency}
 \label{sec:efficiency}
@@ -143,17 +163,16 @@ and their \syslang{} policies.
 %
 To avoid the variance of a single run unduly affecting the result, we average the results over 10 runs each.
 %
-We would expect \syslang{} policies to be slower on average because of its compiler limitations (\S\ref{sec:limitations}).
+We would expect \syslang{} policies to be slower on average because of its compiler limitations (\S\ref{sec:code-limits}).
+
+Figures~\ref{f:times,f:percentages} compare the \syslang{} and Graph Query API policy execution times.
 %
 We found that \syslang{} policies are 2-12\% slower than their Graph Query API counterparts.
 %
 The one exception is WebSubmit, which was 0.5\% faster than the Rust API policies.
 %
-However, the WebSubmit policies run quickly (~25-30ms for 3 policies),
-so in any given run, this percentage varies widely.
-%
-Figure~\ref{f:times} compares the \syslang{} execution times to the Graph Query API execution times.
-%
+However, the WebSubmit policies run quickly (~30ms),
+so in any given run, a difference of a few milliseconds causes this percentage to vary widely.
 \begin{figure}
     \begin{centering}
         \includegraphics[scale=0.7]{graphics/times.pdf}
@@ -162,7 +181,6 @@ Figure~\ref{f:times} compares the \syslang{} execution times to the Graph Query 
     \end{centering}
 \end{figure}
 %
-Figure~\ref{f:percentages} gives the percentage difference in run time for each application.
 \begin{figure}
     \begin{tabular}{|l|p{3cm}|p{3.5cm}|p{2cm}|p{3cm}|}
         \hline

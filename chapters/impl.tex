@@ -1,5 +1,5 @@
 \chapter{Implementation}
-\label{sec:limitations}
+
 We implement the \syslang{} compiler in 2370 lines of Rust.
 
 \syslang{} has some limitations which could be overcome with further engineering effort.
@@ -7,6 +7,7 @@ We implement the \syslang{} compiler in 2370 lines of Rust.
 We detail those below.
 
 \section{Direct Dependencies}
+\label{sec:direct-limits}
 \syslang{} relations reason about \emph{transitive} dependencies between PDG nodes.
 %
 There is no way for \ces{} to enforce a \emph{direct} edge between two nodes.
@@ -27,6 +28,7 @@ to sensitive data before it reaches some |sink| (perhaps in a security-critical 
 \syslang{} could not express this policy, while \sys{}'s Graph Query API can.
 
 \section{Code Improvements}
+\label{sec:code-limits}
 The \syslang{} compiler does not optimize its outputted code, so it misses opportunities for efficiency improvements.
 %
 For example, if a policy contains two iterators over the same data, the \syslang{} compiled policy will traverse the PDG twice,
@@ -40,6 +42,7 @@ but the compiler's templates could be revised to support this error message fram
 %
 
 \section{Other Limitations}
+\label{sec:other-limits}
 Our \syslang{} prototype supports five levels of bullets, but more could be added with additional engineering effort.
 %
 It also only supports iterating over defined variables and variables marked \lstinline[language=CNL]|@@m@@|.

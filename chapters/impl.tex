@@ -19,8 +19,8 @@ one would reasonably conclude that |sensitive| goes to |sink|.
 %
 However, since |sensitive| is dereferenced, the PDG would contain an intermediate node between |sensitive| and |sink|,
 so there is no direct data flow edge between |sensitive| and |sink|.
-\carolyn{Double check with Justus that this dereference example works; otherwise, introduce a toy example where sensitive flows to an intermediate variable,
-which then flows to sink.}
+% \carolyn{Double check with Justus that this dereference example works; otherwise, introduce a toy example where sensitive flows to an intermediate variable,
+% which then flows to sink.}
 %
 However, it is possible that a \dev{} would want to forbid any intermediate data transformations
 to sensitive data before it reaches some |sink| (perhaps in a security-critical setting).

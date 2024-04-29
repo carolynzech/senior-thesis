@@ -60,9 +60,28 @@ or more than five levels of nested expressions~(\Cref{sec:direct-limits,sec:othe
 It also cannot express policies that require more fine-grained reasoning about particular source code
 entities, like arguments.
 %
-As an example, we present a (simplified) version of one of our policies for WebSubmit, a homework submission system.
+
+\section{Precision}
+\label{sec:precision}
+\syslang{} policies do not support the same degree of precision as native Rust polices~(\Cref{sec:interface,sec:direct-limits}).
 %
-WebSubmit sends students feedback through email using the function |send_email(recipient, sender, content)|.
+We evaluate to what extent this loss of precision affects the accuracy of \syslang{} policies.
+
+For each application, we wrote Graph Query API policies and equivalent \syslang{} policies.
+%
+The Graph Query API policies leveraged functionality that is out of scope for \syslang{}
+(e.g., reasoning about the direct siblings of a marked node).
+%
+We ran these policies on compliant and incompliant versions of the applications.
+%
+We found that both sets of policies were correct for every application,
+i.e., passed for the compliant versions and failed for the incompliant ones.
+%
+This result is a promising indicator that \syslang's worse precision is acceptable in practice.
+
+However, there are some examples of policies for which \syslang's lack of precision would impact correctness.
+%
+As an example, take the function |send_email(recipient, sender, content)|.
 %
 A \ce{} may want to enforce that if \lstinline[language=CNL]|@@sensitive@@| data is sent,
 the recipient is an administrator.
@@ -99,24 +118,6 @@ the operation through the |content| argument.
 \sys{}'s Graph Query API can enforce that the administrator goes to the |recipient| argument,
 so it is possible to write a native Rust policy that catches this bug.
 
-\section{Precision}
-\label{sec:precision}
-\syslang{} policies do not support the same degree of precision as native Rust polices~(\Cref{sec:interface,sec:direct-limits}).
-%
-We evaluate to what extent this loss of precision affects the accuracy of \syslang{} policies.
-
-For each application, we wrote Graph Query API policies and equivalent \syslang{} policies.
-%
-The Graph Query API policies leveraged functionality that is out of scope for \syslang{}
-(e.g., reasoning about the direct siblings of a marked node).
-%
-We ran these policies on compliant and incompliant versions of the applications.
-%
-We found that both sets of policies were correct for every application,
-i.e., passed for the compliant versions and failed for the incompliant ones.
-%
-This result is a promising indicator that \syslang's worse precision is acceptable in practice.
-
 \section{Efficiency}
 \label{sec:efficiency}
 For each application, we compare the total execution time of its Graph Query API policies
@@ -132,7 +133,7 @@ We found that \syslang{} policies are 2-12\% slower than their Graph Query API c
 %
 The one exception is WebSubmit, which was 0.5\% faster than the Rust API policies.
 %
-However, the WebSubmit policies run quickly (~30ms),
+However, the WebSubmit policies run quickly (approx. 30ms),
 so in any given run, a difference of a few milliseconds causes this percentage to vary widely.
 
 These results demonstrate that \syslang{} policies incur an acceptable overhead compared to native Rust policies.

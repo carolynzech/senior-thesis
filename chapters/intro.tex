@@ -10,8 +10,9 @@ under the Children’s Online Privacy Protection Act~\cite{meta-fine,amazon-fine
 %
 To ensure compliance, organizations must relate dense legal text to their low-level application source code.
 %
-Currently, software providers use manual audits to verify compliance, which are expensive, time-consuming,
+Currently, organizations use manual audits to verify compliance, which are expensive, time-consuming,
 and infrequent~\cite{CostContinuousCompliance2020,smithGDPRRacketWho}.
+%
 
 \sys{} is a static analyzer for Rust applications that \devs{} leverage to find such bugs in their programs before deployment.
 %
@@ -19,114 +20,114 @@ and infrequent~\cite{CostContinuousCompliance2020,smithGDPRRacketWho}.
 where nodes are program entities (functions, arguments, etc.) and edges are control or data flow dependencies.
 %
 \sys{} evaluates the PDG against the policy and outputs whether the application is compliant.
+
+\Devs{} can use \sys{} to receive immediate feedback on the impact of their changes by running 
+\sys{} continually throughout the development process, perhaps as part of a CI pipeline.
 %
-We imagine that \devs{} run \sys{} continually throughout the development process, perhaps as part of a CI pipeline.
+We envision that \sys{} could replace (or at least reduce the frequency of) manual compliance audits.
+
 
 \section{The Problem}
-Ideally, \writers{} could specify policies at a high level (e.g., ``all sensitive data is encrypted before it exits the application'').
+\sys{} policies are Rust programs that execute low-level graph queries over an application's PDG.
 %
-Such a high-level specification is clear, concise, and portable across applications.
+To write these programs, \devs{} must first connect high-level concepts 
+(e.g., ``all sensitive data is encrypted'')
+to low-level implementation details.
 %
-Prior to this work, however, \sys{} did not support this level of policy abstraction.
+They must then understand how \sys{} represents these details with a PDG,
+and finally translate their high level policy into a series of assertions about paths in this graph.
 %
-Instead, policies were Rust programs that executed low-level graph queries over the application's PDG.
+This design limits the available pool of policy writers to those with 
+an in-depth understanding of Rust programming, application semantics, and \sys{}'s PDG representation.
 %
-This design limited the available pool of policy writers to those with an in-depth understanding of Rust programming and \sys{}'s PDG representation.
-%
-Since policies were programs, they had the same problems as the applications they evaluated: 
-they were buggy, laborious to write, and comprehensible only to programmers familiar with the application.
-%
+Since policies are programs, they have the same problems as the applications they evaluate: 
+they are buggy, laborious to write, and comprehensible only to programmers familiar with the application.
 
-We address this issue with \syslang{}, a DSL for \policies{} over PDGs.
+Ideally, policy writers would specify only the high-level concepts behind their policy,
+which \sys{} would translate automatically into an application-specific query.
 %
-\syslang{} is a Controlled Natural Language (CNL) interface; users write policies in natural language, but are restricted to a defined grammar. ~\cite{cnl-def}
+We realize this goal with \syslang{}, a DSL for \policies{} over PDGs.
 %
-Natural language offers the intuitive quality we sought, while the grammar allowed us to avoid the ambiguity of unconstrained English.
+\syslang{} is a Controlled Natural Language (CNL) interface; users write policies in natural language, 
+but are restricted to a defined grammar ~\cite{cnl-def}.
+%
+Natural language offers the intuitive quality we seek, 
+while the grammar allows us to avoid the ambiguity of unconstrained English.
 %
 We pair \syslang{} with a compiler that translates policies to \sys{} graph queries in Rust.
 %
 \Devs{} then invoke \sys{} on their application,
-which will generate its PDG, evaluate it against the compiled \syslang{} policy,
-and output whether the application is compliant.
+which generates its PDG, evaluates it against the compiled \syslang{} policy,
+and outputs whether the application is compliant.
 %
 
 \section{Goals}
-\syslang{} must address a few challenges.
+The design of \syslang{} must address four challenges.
 
 First, it must be accessible yet unambiguous.
 %
-\syslang{} should not require policy writers to reason about low-level source code entities, such as particular functions or arguments.
+\syslang{} should avoid requiring policy writers to reason about low-level source code entities, 
+such as particular functions or arguments.
 %
-Such a design would tie the policy to the application's implementation, effectively restricting policy writing to the application's \devs.
+Such a design would tie the policy to the application's implementation, 
+effectively restricting policy writing to the application's \devs.
 %
 It would also make the policies more difficult to write and brittle to source code changes.
 %
-\syslang{} should instead be accessible to a broader range of technical stakeholders.
+\syslang{} should instead be accessible to a range of technical stakeholders.
 %
 Ideally, a \ce--someone who knows how to program, 
-but who is not necessarily familiar with the particular implementation details--would write policies.
+but who is not necessarily familiar with the particular implementation details--would write policies in a code-agnostic way.
 %
-% Larger organizations have dedicated compliance teams that could write such policies.~\cite{todo}
-% %
-% In smaller organizations, the \ce{} could be a team's manager.\carolyn{this level of detail is probably not necessary}
-% %
-% Natural language is the most obvious intuitive structure for specifying these policies, 
-% especially since privacy regulations are specified in natural language.\carolyn{I don't like this sentence.}
-% %
-% However, natural language is also ambiguous.
-% %
-% 
-% %
-% Programming languages have well-known constructs for handling such ambiguity, such as parenthesized expressions or operator precedence rules.~\cite{todo}
-% %
-Natural language is an obvious intuitive structure for specifying these policies.
+
+Natural language provides an intuitive structure for specifying these policies.
 %
-However, unconstrained natural language can be ambiguous, which is unacceptable for a privacy policy.
+However, unconstrained natural language can be ambiguous.
 %
 For example, the sentence ``|A| or |B| and |C|'' is vague; which operator should take higher precedence?
 %
-\syslang{} must reject ambiguous policies while not becoming so onerous to use that it 
+While such ambiguity may be acceptable (or even desirable) in legal text,
+it is unacceptable for a policy that is checkable by an automated tool.
+%
+\syslang{} must reject ambiguous policies without becoming so onerous to use that it 
 requires the same expertise and time investment as writing a graph query program.
 
 Second, \syslang{} should be expressive.
 %
 A trivial way of eliminating ambiguity would be to define a highly restricted natural language interface that allows for only a handful of policy formulations.
 %
-This structure, however, would not be expressive enough to meet the needs of complex applications, 
+This structure, however, would be insufficiently expressive to meet the needs of complex applications, 
 which must abide by a wide range of privacy requirements.
 %
 Instead, \syslang{} should be flexible enough to apply across policy and application domains.
 
-Third, \syslang{} should be precise.
+Third, \syslang{} should support sufficiently precise queries to express common \policies{}, 
+without overwhelming the \writer{} with the specifics of \sys{}'s PDG representation. 
 %
-\sys{}'s PDG representation represents program structure at a high level of precision.
-%
-% It can reason about the dependencies of each distinct function argument or fields of a type.\carolyn{confusing sentence}
+\sys{}'s PDG representation represents program structure with a specific level of precision.
 %
 With the existing graph query interface, \writers{} can leverage this precision to make highly specific queries
 (e.g., count the exact number edges between two nodes in a graph). 
 %
 However, \policies{} often do not require this level of precision.
 %
-If \syslang{} were to support such precise queries over the PDG, it would not be accessible--\ces{} would require expertise
-to choose from a wide array of query patterns over a complex, unfamiliar data strucutre.
+If \syslang{} were to require reasoning about the PDG specifics, 
+it would not be accessible--\ces{} would require expertise
+to choose from a wide array of query patterns over a complex, unfamiliar data structure.
 %
-However, if policies are not sufficiently precise, they are more likely to produce false positives or false negatives when run against application code.
-%
-\syslang{} should support sufficiently precise queries to express common \policies{}, 
-while not overwhelming the \writer{} with the full power of \sys{}'s PDG representation. 
+However, if policies are insufficiently precise, they are more likely to produce false positives or false negatives when run against application code.
 
-Fourth, \syslang{} policies, once compiled, should be similarly efficient to graph queries originally written in Rust.
+Fourth, \syslang{} policies, once compiled, should be similarly efficient to graph queries written in Rust.
 %
-This goal is necessary so that \sys{} remains practical for CI use.
+This goal is necessary so that \sys{} runs at interactive timescales when checking \syslang{} policies.
 
 We evaluate \syslang{} against seven third-party Rust applications.
 %
 We find that \syslang{} can express a wide range of \policies{} for these applications,
 that these policies correctly identify bugs,
-and that they incur acceptable run time overhead compared to optimized Rust graph queries.
-%
+and that they incur acceptable run time overhead (\textasciitilde{}0-12\%) compared to hand-optimized Rust graph queries.
 
+\bigskip{}
 \emph{\sys{} and its Graph Query API is the product of collaboration with Justus Adam, Livia Zhu, Sreshtaa Rajesh, 
 Will Crichton, Shriram Krishnamurthi, and Malte Schwarzkopf.
 My contribution specifically is the \syslang{} policy language and the compilation to Rust policies.}

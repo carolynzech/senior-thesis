@@ -5,14 +5,32 @@ Software providers handling sensitive data must verify that their applications c
 %
 For example, to comply with the GDPR, applications must delete a user's personal data on request.
 % 
-Existing tools to express \policies{} are either inexpressive or overly technical.
+
+\sys{} is a static analyzer that helps developers verify the compliance of their Rust applications.
 %
-\syslang{} is a new \policylang{} that can specify a wide range of \policies{} in an intuitive, 
+\Devs{} write custom \policies{} for their application, which \sys{} checks against the implementation.
+%
+We imagine that \devs{} use \sys{} as part of their normal code review processes, allowing them to catch bugs before deployment.
+%
+\sys{} must therefore be \emph{practical}: it should be fast, robust to source code changes, and straightforward to use.
+
+Writing a \sys{} policy, however, is not straightforward.
+%
+Policies are Rust programs which reason about 
+data flow between particular source code entities (e.g., arguments or types).
+%
+As such, policies are closely tied to the application's implementation,
+which makes them difficult to write and inaccessible to all those but the application's developers.
+
+\syslang{} is a new \policylang{} that seeks to reduce the developer effort required to apply \sys{} to applications.
+%
+It can specify a wide range of \policies{} in an intuitive, 
 controlled natural language format.
 %
-\Devs{} compile their \syslang{} policies to Rust programs,
+\Devs{} compile their \syslang{} policies to \sys{} Rust policies,
 which they can then run against their applications to verify compliance.
 %
+
 We evaluate \syslang{} on seven real-world Rust applications and find that it can
 express a wide variety of \policies{}, 
 it incurs low \dev{} effort,

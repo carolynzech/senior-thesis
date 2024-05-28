@@ -17,11 +17,11 @@ and infrequent~\cite{CostContinuousCompliance2020,smithGDPRRacketWho}.
 \sys{} is a static analyzer for Rust applications that \devs{} leverage to find such bugs in their programs before deployment.
 %
 \sys{} evaluates an application by generating its program dependence graph (PDG), 
-where nodes are program entities (functions, arguments, etc.) and edges are control or data flow dependencies.
+where nodes are program entities (arguments, types, etc.) and edges are control or data flow dependencies.
 %
 \sys{} evaluates the PDG against the policy and outputs whether the application is compliant.
 
-\Devs{} can use \sys{} to receive immediate feedback on the impact of their changes by running 
+\Devs{} can receive immediate feedback on the impact of their changes by running 
 \sys{} continually throughout the development process, perhaps as part of a CI pipeline.
 %
 We envision that \sys{} could replace (or at least reduce the frequency of) manual compliance audits.
@@ -125,9 +125,9 @@ We evaluate \syslang{} against seven third-party Rust applications.
 %
 We find that \syslang{} can express a wide range of \policies{} for these applications,
 that these policies correctly identify bugs,
-and that they incur acceptable run time overhead (\textasciitilde{}0-12\%) compared to hand-optimized Rust graph queries.
+and that they incur acceptable run time overhead ($\approx$0-12\%) compared to hand-optimized Rust graph queries.
 
 \bigskip{}
-\emph{\sys{} and its Graph Query API is the product of collaboration with Justus Adam, Livia Zhu, Sreshtaa Rajesh, 
+\emph{\sys{} is the product of collaboration with Justus Adam, Livia Zhu, Sreshtaa Rajesh, 
 Will Crichton, Shriram Krishnamurthi, and Malte Schwarzkopf.
 My contribution specifically is the \syslang{} policy language and the compilation to Rust policies.}

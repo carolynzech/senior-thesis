@@ -26,7 +26,8 @@ and \lstinline[language=CNL]|@@time@@| markers to represent each of these ideas.
 The \ce{} must have some technical background to establish these concepts--they must, for example, understand what a database is,
 and the kind of data that it would store.
 %
-However, they do not need to understand how the source code implements this functionality.
+However, they do not need to understand how the source code implements this functionality,
+or the details of the database client library that the app uses.
 %
 
 Next, the \ce{} writes the policy in terms of these markers.
@@ -45,19 +46,19 @@ For each "view" marked @@views@@:
   For each "database store" marked @@store@@:
 \end{lstlisting}
 %
-Variables are in purple and markers are in teal.
+Here, and in the following text, variables are in purple and markers are in teal.
 
 The \ce{} must now establish that a given \lstinline[language=CNL]|"database store"| actually stores this \lstinline[language=CNL]|"view"|--
 if it stores some other, unrelated data, the policy does not apply.
 %
-To do so, they introduce the first \emph{relation} into their policy:
+To do so, they introduce the first \emph{predicate} into their policy:
 \begin{lstlisting}[language=CNL]
 For each "view" marked @@views@@:
   For each "database store" marked @@store@@:
-    If "view" goes to "database store" then:
+    /*If*/ "view" /*goes to*/ "database store" /*then:*/
 \end{lstlisting}
 %
-Relations are expressions that relate two objects to each other--either two variables, or a variable and a marker.
+Predicates are expressions that relate two objects to each other--either two variables, or a variable and a marker.
 
 Note that the \ce{} need not specify \emph{how} or \emph{when} the \lstinline[language=CNL]|"view"| reaches the \lstinline[language=CNL]|"database store"|.
 %
@@ -73,21 +74,17 @@ The \ce{} then defines the consequent of the conditional:
 For each "view" marked @@views@@:
   For each "database store" marked @@store@@:
     If "view" goes to "database store" then:
-      There is a "date" marked @@time@@ where:
-        "date" goes to "database store"
+      /*There is a*/ "date" /*marked*/ @@time@@ /*where:*/
+        "date" /*goes to*/ "database store"
 \end{lstlisting}
-%
-% By using variables, the \ce{} has ensured that the \lstinline[language=CNL]|"view"| and \lstinline[language=CNL]|"date"| go to the \emph{same} \lstinline[language=CNL]|"database store"|.
-%
-% The ``goes to'' relation enforces that the PDG reflects a transitive data dependency between \lstinline[language=CNL]|"view"| and the \lstinline[language=CNL]|"database store"|.
 %
 The consequent ensures that if the view is stored, that some date is also stored.
 %
-Since both the antecedent and the consequent reason about the same \lstinline[language=CNL]|"database store"| variable,
-the \ce{} ensures that the date and view are stored \emph{together}.
+% Since both the antecedent and the consequent reason about the same \lstinline[language=CNL]|"database store"| variable,
+% the \ce{} ensures that the date and view are stored \emph{together}.
 %
-Without variables, the \ce{} could only write that the current date goes to some entity marked \lstinline[language=CNL]|@@store@@|,
-but this could be a completely different store unrelated to \lstinline[language=CNL]|"view"|.
+% Without variables, the \ce{} could only write that the current date goes to some entity marked \lstinline[language=CNL]|@@store@@|,
+% but this could be a completely different store unrelated to \lstinline[language=CNL]|"view"|.
 
 Finally, the \ce{} establishes the \emph{scope} of their policy,
 %
@@ -98,9 +95,9 @@ In this case, the \ce{} determines that the entire application should uphold thi
 producing the final policy:
 
 \begin{lstlisting}[language=CNL]
-Scope: Everywhere
+/*Scope: Everywhere*/
 
-Policy:
+/*Policy:*/
 For each "view" marked @@views@@:
   For each "database store" marked @@store@@:
     If "view" goes to "database store" then:
@@ -111,11 +108,15 @@ For each "view" marked @@views@@:
 The \ce{} then sends this policy to a \dev{}, 
 who leverages their implementation knowledge to apply the markers to the appropriate source code entities.
 %
-The \dev{} runs \syslang{}'s compiler, which outputs a Rust binary containing an equivalent graph query over a marked PDG.
+Here, they might attach the \lstinline[language=CNL]|@@views@@| marker on all function arguments of type |PageView|,
+the \lstinline[language=CNL]|@@store@@| marker on an argument to a database library insertion function,
+and the \lstinline[language=CNL]|@@time@@| marker on the return value of a function that gets the current date.
 %
-They edit the outputted file to provide application-specific information--e.g., the source code directory to analyze--then run it with a |cargo run| command.
+The \dev{} runs \syslang{}'s compiler, 
+which outputs a Rust program that contains an equivalent graph query over a marked PDG 
+and boilerplate code to invoke \sys{}.
 %
-The binary file invokes \sys{}, which generates the application's marked PDG, 
-evaluates it against the compiled policy,
+\sys{} generates the application's marked PDG, 
+evaluates it against the policy,
 and outputs whether the policy passed or failed.
 %

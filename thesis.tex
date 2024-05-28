@@ -24,6 +24,8 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{cleveref}
 \usepackage{times}
+\usepackage{enumitem}
+\usepackage{makecell}
 
 \usepackage[
   backend=biber,
@@ -94,7 +96,7 @@
   morestring=[b]",
   stringstyle=\color{violet},
   moredelim={[is][\color{teal}]{@@}{@@}},
-  moredelim={[is][\color{blue}]{/*}{*/}}
+  moredelim={[is][keywordstyle]{/*}{*/}}
 }
 
 \lstset{
@@ -133,11 +135,10 @@
 \newpage
 
 \input{chapters/abstract.tex}
-% \input{chapters/acknowledgements.tex}
 \input{chapters/intro.tex}
 \input{chapters/background.tex}
 \input{chapters/overview.tex}
-\input{chapters/design.tex}
+\input{chapters/interface.tex}
 \input{chapters/impl.tex}
 \input{chapters/eval.tex}
 \input{chapters/related-work.tex}

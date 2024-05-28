@@ -12,16 +12,16 @@
 <definitions> ::= <definition> <definitions> | <definition>
 
 <definition> ::=
-	<bullet> <variable> "is each" <variable_intro> "where:" (<exprs> | <body>)
+	<numbered clause> <variable> "is each" <variable_intro> "where:" (<exprs> | <body>)
 
 <scope> ::= "Everywhere:" | "Somewhere:" | "In <name>":
 
 <exprs> ::= 
 	<clause> <operator> <exprs> |
 	<clause> |
-	<only via relations>
+	<only via predicates>
 
-<bullet> ::= <number>. | <number>) | <letter>. | <letter>)
+<numbered clause> ::= <number>. | <number>) | <letter>. | <letter>)
 
 <operator> ::= "and" | "or"
 
@@ -29,9 +29,9 @@
 
 <clause intro> ::= <for each> | <there is>
 
-<for each> ::= <bullet> "For each" <variable intro>":"
+<for each> ::= <numbered clause> "For each" <variable intro>":"
 
-<there is> ::= <bullet> "There is a" <variable intro> "where:"
+<there is> ::= <numbered clause> "There is a" <variable intro> "where:"
 
 <variable intro> ::= <variable> "input"
     \alt <variable> "item"
@@ -44,21 +44,21 @@
 	\alt <clause>
 	\alt <body>
 
-<body> ::= <bullet> <relation> <operator> <body> 
+<body> ::= <numbered clause> <predicate> <operator> <body> 
     \alt <conditional> 
-    \alt <bullet> <relation>
+    \alt <numbered clause> <predicate>
 
-<conditional> ::= <bullet> "If" <relation> " then:" <clause body> 
+<conditional> ::= <numbered clause> "If" <predicate> " then:" <clause body> 
 
-<only via relations> ::= <only via relation> | <only via relation> <operator> <only via relations>
+<only via predicates> ::= <only via predicate> | <only via predicate> <operator> <only via predicates>
 
-<only via relation> ::= 
+<only via predicate> ::= 
 	"Each" <variable intro> "goes to a" 
     (<variable> | <variable> "marked" <marker>) 
 	"only via a" (<variable> | <variable with marker>)
     "marked" <marker>
 
-<relation> ::= <variable> "does not influence" <variable>
+<predicate> ::= <variable> "does not influence" <variable>
     \alt <variable> "influences" <variable>
 	\alt <variable> "goes to" <variable>
 	\alt <variable> "does not go to" <variable>

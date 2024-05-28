@@ -9,7 +9,7 @@
        Atomic~\cite{atomic} (v0.34.2)       & Graph DB    & 9.6k   & Access Control                                 \\
        Contile~\cite{contile} (v1.11.0)     & Advertising & 4.9k     & Purpose Limitation                           \\
        Freedit~\cite{freedit} (v0.6.0-rc.3) & Social      & 6.6k     & Data Retention/Expiration                     \\
-       Hyperswitch~\cite{hyperswitch} (v0.2.0)   & Payments    & 198.9k     & Credential Security, Limited Data Collection  \\
+       Hyperswitch~\cite{hyperswitch} (v0.2.0)   & Payments    & 198.9k     & \makecell[l]{Credential Security,\\Limited Data Collection}  \\
        Lemmy~\cite{lemmy} (v0.16.6)        & Social      & 31.4k   & Access Control                               \\
        Plume~\cite{plume} (v0.7.2)         & Blogging    & 21.4k   & Data Deletion                                \\
        WebSubmit~\cite{websubmit} (v1.0)       & Homework    & 1.6k    & Data Deletion, Access Control     \\
@@ -52,18 +52,16 @@ but cannot catch bugs where an application only deletes \emph{some} of the data 
 %
 
 While we were able to express all of the policies for these applications,
-we do not expect that \syslang{} could express every privacy policy.
+\syslang{} has limitations that prevent it from expressing every privacy policy.
 %
 For example, our \syslang{} prototype cannot express policies that rely on direct dependencies 
 or more than five levels of nested expressions~(\Cref{sec:direct-limits,sec:other-limits}).
 %
-It also cannot express policies that require more fine-grained reasoning about particular source code
-entities, like arguments.
-%
 
 \section{Precision}
 \label{sec:precision}
-\syslang{} policies do not support the same degree of precision as native Rust polices~(\Cref{sec:interface,sec:direct-limits}).
+\syslang{} policies support a lower degree of precision than native Rust polices~(\Cref{sec:interface,sec:direct-limits})
+in exchange for greater accessibility.
 %
 We evaluate to what extent this loss of precision affects the accuracy of \syslang{} policies.
 
@@ -77,55 +75,18 @@ We ran these policies on compliant and incompliant versions of the applications.
 We found that both sets of policies were correct for every application,
 i.e., passed for the compliant versions and failed for the incompliant ones.
 %
-This result is a promising indicator that \syslang's worse precision is acceptable in practice.
-
-However, there are some examples of policies for which \syslang's lack of precision would impact correctness.
-%
-As an example, take the function |send_email(recipient, sender, content)|.
-%
-A \ce{} may want to enforce that if \lstinline[language=CNL]|@@sensitive@@| data is sent,
-the recipient is an administrator.
-%
-However, if the \ce{} simply checked that data marked \lstinline[language=CNL]|@@admin@@| goes to \emph{some} |recipient|,
-then code like this would pass the policy:
-\begin{lstlisting}[language=Rust]
-    send_email(admin@cs.brown.edu, student1@cs.brown.edu, benign_data);
-    send_email(student1@cs.brown.edu, student2@cs.brown.edu, sensitive_data);
-\end{lstlisting}
-The second |send_email| call is unsafe because sensitive data is sent to a student, not an administrator.
-%
-However, because the first, unrelated |send_email| recipient is an administrator, 
-\sys{} would see that some recipient is an administrator and the policy would pass.
-%
-To prevent this bug, a \ce{} could make their policy more precise: if data marked \lstinline[language=CNL]|@@sensitive@@| goes to |content|,
-then data marked \lstinline[language=CNL]|@@admin@@| goes to |recipient| \emph{in the same} |send_email| \emph{operation}.
-%
-\syslang{} cannot express this policy exactly.
-%
-It can get close--it can express that data marked \lstinline[language=CNL]|@@admin@@| goes to the same operation,
-but it cannot enforce that it goes to the |recipient| argument specifically.
-%
-Thus, the \syslang{} version of the policy would allow this (buggy) code to pass:
-\begin{lstlisting}[language=Rust]
-    send_email(student1@cs.brown.edu, student2@cs.brown.edu, 
-                "admin@cs.brown.edu's credit card number is [...]");
-\end{lstlisting}
-%
-This code is incompliant because it sends sensitive data to a student,
-but \syslang{}'s policy would not catch it because \lstinline[language=CNL]|@@admin@@| goes to 
-the operation through the |content| argument.
-%
-\sys{}'s Graph Query API can enforce that the administrator goes to the |recipient| argument,
-so it is possible to write a native Rust policy that catches this bug.
+This result is a promising indicator that \syslang's reduced precision is acceptable in practice.
 
 \section{Efficiency}
 \label{sec:efficiency}
 For each application, we compare the total execution time of its Graph Query API policies
-and their \syslang{} policies.
+and its \syslang{} policies.
 %
 To avoid the variance of a single run unduly affecting the result, we average the results over 10 runs each.
 %
-We would expect \syslang{} policies to be slower on average because of its compiler limitations (\S\ref{sec:code-limits}).
+We would expect \syslang{} policies to be slower on average because 
+a human developer can optimize their graph queries,
+while our prototype compiler outputs unoptimized code (\S\ref{sec:code-limits}).
 
 ~\Cref{f:times,f:percentages} compare the \syslang{} and Graph Query API policy execution times.
 %
@@ -133,32 +94,40 @@ We found that \syslang{} policies are 2-12\% slower than their Graph Query API c
 %
 The one exception is WebSubmit, which was 0.5\% faster than the Rust API policies.
 %
-However, the WebSubmit policies run quickly (approx. 30ms),
+However, the WebSubmit policies run quickly ($\approx$30ms),
 so in any given run, a difference of a few milliseconds causes this percentage to vary widely.
 
-These results demonstrate that \syslang{} policies incur an acceptable overhead compared to native Rust policies.
+These results demonstrate that \syslang{} policies 
+incur an acceptable overhead compared to hand-optimized graph queries.
 
 \begin{figure}
     \begin{centering}
         \includegraphics[scale=0.6]{graphics/times.pdf}
-        \caption{\syslang{} and Graph Query policy execution times, averaged across 10 runs.}
+        \caption{
+            \syslang{} and Graph Query policy execution times, on a logarithmic scale, averaged across 10 runs. 
+            The \syslang{} execution times are similar to those of hand-optimized queries.
+        }
         \label{f:times}
     \end{centering}
 \end{figure}
 %
 \begin{figure}
-    \begin{tabular}{|l|p{3cm}|p{3.5cm}|p{2cm}|p{3cm}|}
+    \small
+    \begin{tabular}{|p{2.75cm}|p{2.75cm}|p{2.75cm}|p{2.75cm}|}
         \hline
-        \textbf{Application} & \textbf{\syslang{} Time (ms)} & \textbf{Graph Query API Time (ms)} & \textbf{Difference (ms)} & \textbf{\syslang{} \% Slower} \\ \hline
-        AtomicServer & 127.92    & 118.8     & 9.12    & 7.68  \\ \hline
-        Contile      & 1109.14   & 1064.43   & 44.71   & 4.2   \\ \hline
-        Freedit      & 347.57    & 339.85    & 7.72    & 2.27  \\ \hline
-        Hyperswitch  & 251044.37 & 241890.42 & 9153.95 & 3.78  \\ \hline
-        Lemmy        & 7026.23   & 6277.3    & 748.93  & 11.93 \\ \hline
-        Plume        & 95.63     & 88.86     & 6.77    & 7.62  \\ \hline
-        WebSubmit    & 29.89     & 30.07     & -0.18   & -0.6  \\ \hline               
+        \textbf{Application} & \textbf{\syslang{} Time (ms)} & \textbf{Graph Query API Time (ms)} & \textbf{\syslang{} Percent Slower} \\ \hline
+        AtomicServer & 127.92    & 118.8     & 7.68  \\ \hline
+        Contile      & 1109.14   & 1064.43   & 4.2   \\ \hline
+        Freedit      & 347.57    & 339.85    & 2.27  \\ \hline
+        Hyperswitch  & 251044.37 & 241890.42 & 3.78  \\ \hline
+        Lemmy        & 7026.23   & 6277.3    & 11.93 \\ \hline
+        Plume        & 95.63     & 88.86     & 7.62  \\ \hline
+        WebSubmit    & 29.89     & 30.07     & -0.6  \\ \hline               
         \end{tabular}
-        \caption{Comparison of \syslang{} and Graph Query API policy execution times.}
+        \caption{
+            Comparison of \syslang{} and Graph Query API policy execution times. 
+            \syslang{} policies are, on average, marginally slower than the Graph Query API policies. 
+        }
         \label{f:percentages}
 \end{figure}
 
@@ -174,44 +143,10 @@ However, due to time limitations, we instead summarize our experience (as the au
 
 \paragraph{Policy Strictness:} We find that the effort required to encode policies in \syslang{} is proportional to the strictness of the policy.
 %
-For example, take the AtomicServer application, a graph-based database.
+For example, take the AtomicServer application, a graph-based database~\cite{atomic}.
 %
-% To update a database resource, users commit a record of their changes.
-% %
-% % Before applying the commit, the application must verify that the user is permitted to modify the resource.
-% %
 A previous version of the application failed to verify that the 
-user was permitted to modify a database resource before applying the update.
-%
-% A (simplified) version of the fixed source code is below.
-% %
-% \begin{lstlisting}[language=Rust]
-%     impl Commit {
-%         pub fn update_resource(&self, store: &Database) -> AtomicResult<Resource> {
-%             let commit_resource: Resource = self.clone().into_resource(store)?;
-%             /* fix -- move check_required_props above add_resource */
-%             resource.check_required_props(store)?; 
-%             store.add_resource(&commit_resource)?;
-%         }
-%     }
-% \end{lstlisting}
-%
-% Our Graph Query API policy writers had markers for both the |Commit| and |Resource| types.
-% %
-% Their policy enforced that if a |Commit| is stored,
-% the user was authorized under the permissions of the |Resource|.
-% %
-% They derived this policy by reasoning backward from the source code--the \dev{} comments, e.g. the ``Save the Commit to the Store'' comment,
-% reason about storing the commit.
-% %
-% When I was writing the \syslang{} policy, however, I was not thinking about the source code implementation of |Commit|s.
-% %
-% Instead, I reasoned that if the database resource was what was modified,
-% then there is no reason to care about the particular commit record of the changes that get stored alongside that resource.
-%
-% We encode this policy in \syslang{} by checking that if a \lstinline[language=CNL]|"database resource" goes to "update"|,
-% \lstinline[language=CNL]|"database resource" goes to "auth check"| and 
-% \lstinline[language=CNL]|"auth check" affects whether "update" happens|.
+user was permitted to modify a database resource before applying the update~\cite{atomic-fix}.
 %
 We encode this policy in \syslang{} by enforcing that if a database resource is modified,
 the application checks which users are permitted to modify the resource,
@@ -227,7 +162,7 @@ Commits are records of modifications to a resource (analogous to Git commits).
 %
 Our Graph Query API policy enforced that a commit had transitive data influence on the modified resource.
 %
-This assertion is not necessary to catch the permission check bug.
+However, this assertion is not necessary to catch the permission check bug.
 %
 
 Throughout this work, we found multiple other instances where our \syslang{}
@@ -240,7 +175,7 @@ As a result, we unwittingly wrote policies that were more closely tied to the
 source code than actually necessary to express the policy we sought to check.
 %
 When we wrote the \syslang{} policies, 
-we had a much smaller subset of relations available.
+we had a much smaller subset of predicates available.
 %
 We found that by abstracting away the full power of the PDG representation,
 \syslang{} encouraged us to think about the minimum set of concepts
@@ -249,25 +184,14 @@ so our policies did not contain these unnecessary checks.
 
 If a \ce{} does want to check in their \syslang{} policy that the modified resource is indeed
 affiliated with a commit, they will need to expend more effort.
-% While this approach can simplify policies and reduce the effort required to write them,
-% it may cause the \ce{} to miss opportunities to strengthen their policies with implementation-specific assertions.
-%
-% Graph Query API policies are less likely to suffer this problem because they require
-% more advanced knowledge of programming and the application's PDG,
-% which makes it more likely that they are written by an \dev{}
-% familiar with the implementation.
-%
-% In these cases, we count on the developer to assess the policy they receive from the \ce{}
-% and make suggestions for improvements as they see fit.
-%.
 %
 They may need to consult with the \dev{} to understand 
 the implementation-specific notion of commits and how they interact with resources.
 %
 The \dev{} would also need to apply (and maintain) more markers to the application.
 
-\paragraph{Bullets:} We found that for some of the policies, 
-our first attempt to express them required more levels of bullets than \sys{} supports~(\Cref{sec:other-limits}).
+\paragraph{Numbered Clauses:} We found that for some of the policies, 
+our first attempt to express them required more levels of numbered clauses than \sys{} supports~(\Cref{sec:other-limits}).
 %
 We refactored the policies to use definitions, 
 which allowed us to express the policies with fewer nested expressions.

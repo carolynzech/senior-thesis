@@ -7,23 +7,33 @@ Existing systems meet at most two of these goals.
 
 Program-based specifications allow developers to write precise and expressive policies.
 %
-In Resin ~\cite{resin}, developers specify dynamic dataflow assertions in their application code.
+In Resin~\cite{resin}, developers specify dynamic dataflow assertions in their application code.
 %
-Ponder ~\cite{ponder} also encodes policies through code; developers specify assertions that must hold or code that should run if a given predicate is satisfied.
+Ponder~\cite{ponder} also encodes policies through code; 
+developers specify assertions that must hold or code that should run if a given predicate is satisfied.
 %
-Other interfaces, such as IFC ~\cite{jif} or regular expression-based rules ~\cite{hotnets}, 
-allow for precise reasoning over graphs without writing code, but still require a strong technical background.
+Other interfaces, such as IFC~\cite{jif} or regular expression-based rules~\cite{hotnets}, 
+allow for precise reasoning over programs without writing code, 
+but still require a strong technical background.
 
-Legalese ~\cite{legalese} is a \policylang{} that, like \syslang, is structured around allowing or disallowing information flows over a data dependency graph.
+Legalese~\cite{legalese} is a \policylang{} that, like \syslang, 
+is structured around allowing or disallowing information flows over a data dependency graph.
 %
-Legalese can only express whether one node does or does not flow to another--it cannot express control flow or the order of nodes in a dataflow path.
-%
-% It also applies policies to every path in the graph, while \syslang{} supports policy scope.
+Legalese can only express whether one node does or does not flow to another--it 
+cannot express control flow or the order of nodes in a dataflow path,
+and therefore has more limited expressivity than \syslang.
 %
 While Legalese is meant to be more accessible than program-based specifications, 
 user surveys have found that non-programmers struggle to define or interpret Legalese policies ~\cite{legalese, privguard}.
+%
+\syslang{} borrows the concept of numbered clauses from the law 
+in part to make policies more accessible to nontechnical stakeholders (e.g., lawyers) familiar with that structure.
+%
 
 Riverbed~\cite{riverbed} and RuleKeeper~\cite{rulekeeper} offer more accessible policy specifications.
 %
-However, they are very limited to particular domains--Riverbed encodes four binary allow/disallow attributes, while RuleKeeper supports a subset of GDPR provisions.
+However, they are very limited to particular domains--Riverbed encodes four binary allow/disallow attributes, 
+while RuleKeeper only supports a particular subset of GDPR provisions.
 %
+\syslang{} is more flexible; as long as the \ce{} can express their policy in terms of data and control dependencies,
+they can encode it in \syslang{}.

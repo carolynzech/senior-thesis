@@ -7,28 +7,37 @@ The compiler first parses the policy into an abstract syntax tree (AST).
 %
 It then traverses this AST to verify that the policy is properly scoped.
 %
-It errors if any variables are used in a relation without first being introduced by an iterator or definition.
+It errors if any variables are used in a predicate without first being introduced by an quantifier or definition.
 %
 It also prohibits duplicate introductions of the same variable in the same scope.
 
 Once the compiler verifies that the policy is properly scoped,
 it performs a second pass over the AST to compile it to Rust code.
 %
-It performs compilation via template expansion.
+This compilation happens via template expansion.
 %
-It identifies the relevant template for each node in the AST,
+The compiler identifies the relevant template for each node in the AST,
 substituting in the policy's variables and markers.
+
+|For each| and |There is| loops compile to iterators over nodes with the given marker in the \controller{}'s PDG.
 %
-The |and|, |or|, |for each|, |there is|, and |if| constructs correspond directly to Rust builtin operators.
+For example, the statement \lstinline[language=CNL]|For each "view"| \lstinline[language=CNL]|marked @@views@@| compiles to an iterator
+over all nodes marked \lstinline[language=CNL]|@@views@@|.
 %
-Relations compile to expressions using \sys{}'s Graph Query API.
+The |and|, |or|, and \lstinline[language=CNL]|if| constructs correspond directly to Rust builtin operators.
+
+Predicates compile to expressions using \sys{}'s Graph Query API.
 %
 For example, \lstinline[language=CNL]|"x" goes to "y"| compiles to |flows_to(x, y, EdgeSelection::Data)|.
+
+The compiler outputs a Rust program containing the policy.
 %
-The compiler outputs a binary file containing the policy.
-%
-This binary contains boilerplate code to invoke \sys{} against the policy,
+This program contains boilerplate code to invoke \sys{} against the policy,
 which the \dev{} edits to provide application-specific information,
 such as the application directory
 and optional \sys{} configuration flags.
 %
+Once the \dev{} is ready to check their policy against their application,
+they compile and run this program.
+
+We implemented a prototype of the \syslang{} compiler in 2,370 lines of Rust.

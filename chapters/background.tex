@@ -7,7 +7,7 @@ First, we provide some background on PDGs in general, then on \sys{}'s design.
 \section{PDGs}
 A program dependence graph (PDG)~\cite{ferranteProgramDependenceGraph1987} represents a program's \emph{dependencies}.
 %
-The nodes are, generally speaking, any variables in the program, including its arguments and function return values.
+The nodes are, generally speaking, any variables in the program, including function arguments and return values.
 %
 The edges represent dependencies between nodes.
 %
@@ -15,7 +15,8 @@ If the PDG contains an edge $x \xrightarrow{} y$, that indicates that $y$ depend
 %
 There are two kinds of dependencies: data dependencies and control dependencies.
 %
-A data dependency $x \xrightarrow{\mathsf{data}} y$ indicates that $x$ directly affects $y$, e.g., $y = x$.
+A data dependency $x \xrightarrow{\mathsf{data}} y$ indicates that $x$ directly affects $y$, e.g., $y = x$, 
+because data flows from $x$ into $y$.
 %
 A control dependency $x \xrightarrow{\mathsf{control}} y$ indicates that $x$ indirectly affects $y$, 
 e.g., \lstinline[language=Rust]|if (x == 1) y = 1 else y = 2|.
@@ -32,17 +33,20 @@ $x$ has transitive \emph{control} influence on $y$ if there is a path from $x$ t
 
 \sys{} generates PDGs for Rust applications.
 %
-Users express their polices as assertions over their application's PDG, 
-e.g., $x$ must have transitive data influence on $y$.
+Users express their polices as assertions over their application's PDG.
 %
-\sys{} provides a Rust API for common query patterns.
+For example, an assertion may state that $x$ must have transitive data influence on $y$.
 %
-For instance, \writers{} use the \lstinline[language=Rust]|flows_to(x, y, EdgeSelection)| primitive to query for transitive influence, 
-providing |EdgeSelection::Both|, |EdgeSelection::Data|, or |EdgeSelection::Control| for transitive influence,
+\sys{} provides a Rust API, called the \emph{Graph Query API}, for common query patterns.
+%
+For instance, \writers{} use the \lstinline[language=Rust]|flows_to(x, y,| \lstinline[language=Rust]|EdgeSelection)| primitive to query for transitive 
+\break{} influence, providing |EdgeSelection::Both|, |EdgeSelection::Data|, 
+\break{} or |EdgeSelection::Control| for transitive influence,
 transitive data influence, or transitive control influence, respectively.
 
-If a \ce{} wanted to identify all nodes in the PDG corresponding to some privacy-critical operation
-(e.g., data sinks), they could manually inspect it, but that would be tedious and error-prone.
+If a \ce{} wanted to write a policy about some privacy-critical operation
+(e.g., data sinks), they could manually inspect the PDG to identify all relevant nodes, 
+but that would be tedious and error-prone.
 %
 Instead, they use \sys's \emph{markers} abstraction to annotate their source code with custom labels.
 %
@@ -57,17 +61,15 @@ which applies a marker \lstinline[language=CNL]|@@sink@@| to the |recipient| arg
 %
 The PDG will contain one |recipient| node for each invocation of |send_email|, with \lstinline[language=CNL]|@@sink@@| applied to each of them.
 
-\Writers{} use \sys{}'s markers abstraction to write their \policies{}.
+\Writers{} use \sys{}'s marker abstraction to write their \policies{}.
 %
 In this example, rather than explicitly enumerate the dependencies for each |recipient| node,
-the \writer{} can instead specify that all nodes marked \lstinline[language=CNL]|@@sink@@| have some dependency.
+the \writer{} can instead specify that \emph{all} nodes marked \lstinline[language=CNL]|@@sink@@| have some dependency.
 %
 Markers make policies clearer because they allow \writers{} to reason about concepts like 
 \lstinline[language=CNL]|@@sink@@| or \lstinline[language=CNL]|@@user data@@|,
 rather than source-code level entities like function arguments.
 %
-The \sys{} Graph Query API provides a primitive to fetch all nodes marked |m|, 
-which \devs{} can then provide to queries like \lstinline[language=Rust]|flows_to|.
 
 After writing a policy and applying its markers to source code,
 the \dev{} leverages their application knowledge to mark certain functions 
